@@ -38,6 +38,10 @@ Linux utilizes a strict layered architecture to guarantee isolation, secure exec
 * **System Calls (Syscalls):** The secure API interface bridge. Unprivileged user space applications cannot touch the hardware directly. They must switch CPU context into Ring 0 by executing an explicit syscall (e.g., `open()`, `read()`, `fork()`, `write()`).
 * **Hardware Abstraction Layer (HAL):** An internal programmatic driver ecosystem that presents generic, unified interfaces to the Kernel, masking vendor-specific hardware quirks.
 
+<img width="1024" height="559" alt="image" src="https://github.com/user-attachments/assets/1f2fbae8-12c3-4fc7-856a-4d6bc79b3ba7" />
+
+
+
 ---
 
 ## 🔄 2. Process Lifecycle & Management
