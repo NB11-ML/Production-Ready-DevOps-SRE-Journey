@@ -1,0 +1,51 @@
+Script started on 2026-07-25 16:53:05+05:30 [TERM="xterm-256color" TTY="/dev/pts/0" COLUMNS="102" LINES="54"]
+[?2004h]0;primaryusr@primaryvm: ~/git-repo/90DaysOfDevops/Day-03[01;32mprimaryusr@primaryvm[00m:[01;34mDay-03[00m$ sudo su -hutdown  nowexit[K[2Plscd Desktop/[7Pexitip addr[1Pll[2Pexitdocker ls[K[11@docker image[Cls[Kdocker [3Pexitip allddr[3Pexitcd Desktop/ls[Kexitshutdown  now[4Pudo su -[Ksudo su -[K[K]0;primaryusr@primaryvm: ~/git-repo/90DaysOfDevops/Day-03[01;32mprimaryusr@primaryvm[00m:[01;34mDay-03[00m$ [K]0;primaryusr@primaryvm: ~/git-repo/90DaysOfDevops/Day-03[01;32mprimaryusr@primaryvm[00m:[01;34mDay-03[00m$ [K]0;primaryusr@primaryvm: ~/git-repo/90DaysOfDevops/Day-03[01;32mprimaryusr@primaryvm[00m:[01;34mDay-03[00m$ [K]0;primaryusr@primaryvm: ~/git-repo/90DaysOfDevops/Day-03[01;32mprimaryusr@primaryvm[00m:[01;34mDay-03[00m$ [K]0;primaryusr@primaryvm: ~/git-repo/90DaysOfDevops/Day-03[01;32mprimaryusr@primaryvm[00m:[01;34mDay-03[00m$ [K]0;primaryusr@primaryvm: ~/git-repo/90DaysOfDevops/Day-03[01;32mprimaryusr@primaryvm[00m:[01;34mDay-03[00m$ 
+[?2004l[?2004h]0;primaryusr@primaryvm: ~/git-repo/90DaysOfDevops/Day-03[01;32mprimaryusr@primaryvm[00m:[01;34mDay-03[00m$ [7mecho -e '\n======================================================\nModule[27m[7m [27m[7m1: Navigation & File System Hierarchy (FHS)\n======================================================\n[27m[7m'[27m[A[A]0;primaryusr@primaryvm: ~/git-repo/90DaysOfDevops/Day-03[01;32mprimaryusr@primaryvm[00m:[01;34mDay-03[00m$ echo -e '\n======================================================\nModule 1: Navigation & File System Hierarchy (FHS)\n======================================================\n'
+[?2004l
+======================================================
+Module 1: Navigation & File System Hierarchy (FHS)
+======================================================
+
+[?2004h]0;primaryusr@primaryvm: ~/git-repo/90DaysOfDevops/Day-03[01;32mprimaryusr@primaryvm[00m:[01;34mDay-03[00m$ [7mecho -e "\nTo check Present Working Directory or Current Location\n"[27m[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cecho -e "\nTo check Present Working Directory or Current Location\n"
+[?2004l
+To check Present Working Directory or Current Location
+
+[?2004h]0;primaryusr@primaryvm: ~/git-repo/90DaysOfDevops/Day-03[01;32mprimaryusr@primaryvm[00m:[01;34mDay-03[00m$ pwd
+[?2004l/home/primaryusr/git-repo/90DaysOfDevops/Day-03
+[?2004h]0;primaryusr@primaryvm: ~/git-repo/90DaysOfDevops/Day-03[01;32mprimaryusr@primaryvm[00m:[01;34mDay-03[00m$ 
+[?2004l[?2004h]0;primaryusr@primaryvm: ~/git-repo/90DaysOfDevops/Day-03[01;32mprimaryusr@primaryvm[00m:[01;34mDay-03[00m$ [7mecho -e "\nTo Change Dir\n"[27mecho -e "\nTo Change Dir\n"
+[?2004l
+To Change Dir
+
+[?2004h]0;primaryusr@primaryvm: ~/git-repo/90DaysOfDevops/Day-03[01;32mprimaryusr@primaryvm[00m:[01;34mDay-03[00m$ cd /rtc[K[K[Ketc
+[?2004l[?2004h]0;primaryusr@primaryvm: /etc[01;32mprimaryusr@primaryvm[00m:[01;34metc[00m$ 
+[?2004l[?2004h]0;primaryusr@primaryvm: /etc[01;32mprimaryusr@primaryvm[00m:[01;34metc[00m$ pwd
+[?2004l/etc
+[?2004h]0;primaryusr@primaryvm: /etc[01;32mprimaryusr@primaryvm[00m:[01;34metc[00m$ [7mecho -e "\nTo move back to home Dir\n"[27m[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cecho -e "\nTo move back to home Dir\n"[1P[1@H
+[?2004l
+To move back to Home Dir
+
+[?2004h]0;primaryusr@primaryvm: /etc[01;32mprimaryusr@primaryvm[00m:[01;34metc[00m$ cd ~
+[?2004l[?2004h]0;primaryusr@primaryvm: ~[01;32mprimaryusr@primaryvm[00m:[01;34m~[00m$ cd [K[K[Kcd ~echo -e "\nTo move back to Home Dir\n"[1P[1P[1P[1P[1P[C[C[C[C[C[C[C[1P[1P[1P[1P[1@S[1@p[1@e[1@c[1@i[1@f[1@i[1@c[C[C[C[C[C[C[C[C
+[?2004l
+To move to Specific Dir
+
+[?2004h]0;primaryusr@primaryvm: ~[01;32mprimaryusr@primaryvm[00m:[01;34m~[00m$ cd 9[K
+.ansible/        .docker/         gittest/         Pictures/        .ssh/
+.cache/          dockerprac/      .gnupg/          project/         Templates/
+.config/         Documents/       kubernetes-prac/ Public/          Videos/
+Desktop/         Downloads/       .local/          shellscripts/    .vscode-server/
+devops/          git-repo/        Music/           snap/            
+]0;primaryusr@primaryvm: ~[01;32mprimaryusr@primaryvm[00m:[01;34m~[00m$ cd git-repo/90DaysOfDevops/Day-03
+[?2004l[?2004h]0;primaryusr@primaryvm: ~/git-repo/90DaysOfDevops/Day-03[01;32mprimaryusr@primaryvm[00m:[01;34mDay-03[00m$ 
+[?2004l[?2004h]0;primaryusr@primaryvm: ~/git-repo/90DaysOfDevops/Day-03[01;32mprimaryusr@primaryvm[00m:[01;34mDay-03[00m$ [7mecho -e "\nTo create a Dir\n"[27mecho -e "\nTo create a Dir\n"
+[?2004l
+To create a Dir
+
+[?2004h]0;primaryusr@primaryvm: ~/git-repo/90DaysOfDevops/Day-03[01;32mprimaryusr@primaryvm[00m:[01;34mDay-03[00m$ mkdir -p project
+[?2004l[?2004h]0;primaryusr@primaryvm: ~/git-repo/90DaysOfDevops/Day-03[01;32mprimaryusr@primaryvm[00m:[01;34mDay-03[00m$ ls
+[?2004lDay3CMDSession.txt  [0m[01;34mproject[0m
+[?2004h]0;primaryusr@primaryvm: ~/git-repo/90DaysOfDevops/Day-03[01;32mprimaryusr@primaryvm[00m:[01;34mDay-03[00m$ exit
+[?2004lexit
+
+Script done on 2026-07-25 17:26:27+05:30 [COMMAND_EXIT_CODE="0"]
