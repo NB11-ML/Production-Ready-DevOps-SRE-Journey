@@ -9,7 +9,6 @@
 
 set -euo pipefail
 
-
 # Configuration / Environment variables
 
 SOURCE_DIR="~/git-repo/90DaysOfDevops"
@@ -22,7 +21,7 @@ LOG_FILE="/tmp/backup.log"
 
 log_message() {
 	local MSG="$1"
-	echo "[$(date +'%Y-%m-%d %H:%M:%S')] ${MSG}" | tee -a "{LOG_FILE}"
+	echo "[$(date +'%Y-%m-%d %H:%M:%S')] ${MSG}" | tee -a "${LOG_FILE}"
 }
 log_message "Starting Backup process..."
 
@@ -52,9 +51,3 @@ log_message "Cleaning up old backups (> 7 days) in ${DEST_DIR}...)"
 find "${DEST_DIR}" -type f -name "90DaysOfDevops_Backup_*.tar.gz" -mtime +7 -exec rm -f {} \;
 
 log_message "Backup Script Execution Finished"
-
-
-
-
-
-
