@@ -6,17 +6,17 @@ As a DevOps and SRE Engineer, troubleshooting Linux-based systems efficiently is
 
 ## 📋 Table of Contents
 
-1. [Introduction](https://www.google.com/search?q=%231-introduction)
-2. [Phase 1: Initial System Triage](https://www.google.com/search?q=%232-phase-1-initial-system-triage)
-3. [Phase 2: Resource-Specific Troubleshooting](https://www.google.com/search?q=%233-phase-resource-specific-troubleshooting)
-    * [CPU Bottlenecks](https://www.google.com/search?q=%23cpu-bottlenecks)
-    * [Memory Issues](https://www.google.com/search?q=%23memory-issues)
-    * [Disk & Storage Issues](https://www.google.com/search?q=%23disk--storage-issues)
-    * [Network & Connectivity Issues](https://www.google.com/search?q=%23network--connectivity-issues)
+1. [Introduction]
+2. [Phase 1: Initial System Triage]
+3. [Phase 2: Resource-Specific Troubleshooting]
+    * [CPU Bottlenecks]
+    * [Memory Issues]
+    * [Disk & Storage Issues]
+    * [Network & Connectivity Issues]
 
-4. [Phase 3: Log Analysis & Diagnostics](https://www.google.com/search?q=%234-phase-3-log-analysis--diagnostics)
-5. [Phase 4: Process Management & Termination](https://www.google.com/search?q=%235-phase-4-process-management--termination)
-6. [Quick Checklist for Incidents](https://www.google.com/search?q=%236-quick-checklist-for-incidents)
+4. [Phase 3: Log Analysis & Diagnostics]
+5. [Phase 4: Process Management & Termination]
+6. [Quick Checklist for Incidents]
 
 ---
 
