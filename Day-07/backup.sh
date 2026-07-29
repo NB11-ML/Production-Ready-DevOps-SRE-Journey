@@ -22,7 +22,7 @@ LOG_FILE="/tmp/backup.log"
 
 log_message() {
 	local MSG="$1"
-	echo "[$(date +'%Y-%m-%d %H:%M:%S')] ${MSG}" | tee -a "{LOG_FILE}"
+	echo "[$(date +'%Y-%m-%d %H:%M:%S')] ${MSG}" | tee -a "${LOG_FILE}"
 }
 log_message "Starting Backup process..."
 
