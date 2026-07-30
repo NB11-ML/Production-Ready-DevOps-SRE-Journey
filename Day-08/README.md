@@ -9,8 +9,8 @@ Welcome to **Day 08** of the [Production-Ready DevOps & SRE Journey](https://git
 ```text
 Day-08/
 ├── README.md
-├── day-08-cloud-deployment.md
-└── day-08-cloud-deployment-cheatsheet.md
+├── 01-Day-08-cloud-deployment.md
+└── 02-Day-08-cloud-deployment-cheatsheet.md
 
 ```
 
