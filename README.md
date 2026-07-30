@@ -22,7 +22,13 @@ The goal of this journey—inspired by the **#90DaysOfDevOps** initiative—is t
 | Day | Topic | Status | Highlights |
 | :--- | :--- | :--- | :--- |
 | **Day 01** | **DevOps Fundamentals & SRE Intro** | ✅ Completed | Theory, Lifecycle, Culture, and CI/CD Basics |
-| **Day 02** | *Next Topic* | ⏳ Pending | - |
+| **Day 02** | **Linux-Architecture-notes** | ✅ Completed|
+| **Day 03** | **Linux-Basic-Adminstration-notes** | ✅ Completed|
+| **Day 04** | **Linux-Practice** | ✅ Completed|
+| **Day 05** | **Linux-TroubleShooting-Runbook** | ✅ Completed|
+| **Day 06** | **Linux-FileIO-Practice** | ✅ Completed|
+| **Day 07** | **Linux-FileSystemAndScenarios** | ✅ Completed|
+| **Day 08** | **Cloud-Deployment** | ✅ Completed|
 | ... | ... | ... | ... |
 
 ---
