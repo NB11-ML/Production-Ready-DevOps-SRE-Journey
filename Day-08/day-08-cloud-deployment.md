@@ -163,6 +163,12 @@ sudo systemctl status nginx --no-pager
 sudo systemctl enable nginx
 sudo systemctl start nginx
 
+# Logs:
+
+sudo cat /var/log/nginx/* | head -n 20: Viewing the first 20 lines of nginx access and error logs.
+sudo cat /var/log/nginx/access.log > ~/nginx-logs.txt: Saving the Nginx access log file to a local directory on the server.
+scp: Secure Copy for transferring files between machines.
+
 ```
 
 #### 3. Deploy the Sample Web Application
