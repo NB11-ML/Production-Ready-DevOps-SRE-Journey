@@ -29,6 +29,7 @@ The goal of this journey—inspired by the **#90DaysOfDevOps** initiative—is t
 | **Day 06** | **Linux-FileIO-Practice** | ✅ Completed|
 | **Day 07** | **Linux-FileSystemAndScenarios** | ✅ Completed|
 | **Day 08** | **Cloud-Deployment** | ✅ Completed|
+| **Day-09** | **Linux-User-Management** | ✅ Completed|
 | ... | ... | ... | ... |
 
 ---
