@@ -76,16 +76,15 @@ $$r = 4 \quad \vert{} \quad w = 2 \quad \vert{} \quad x = 1$$
 
 ```text
 Day-10/
-├── README.md                   # Core module documentation & task summary
+├── README.md                   # Core module documentation and task summary
 ├── day-10-file-permissions.md  # Detailed challenge submission report
-├── cheatsheet.md               # Quick command & permission calculation reference
-├── devops.txt                  # Read-only test file (444)
-├── notes.txt                   # Group-restricted notes file (640)
-├── script.sh                   # Executable bash script (755)
-└── project/                    # Team workspace directory (755)
-
+├── cheatsheet.md               # Quick command and permission calculation reference
+└── files/                      # Task source files directory
+    ├── devops.txt              # Read-only test file (chmod 444)
+    ├── notes.txt               # Group-restricted notes file (chmod 640)
+    ├── script.sh               # Executable bash script (chmod 755)
+    └── project/                # Team workspace directory (chmod 755)
 ```
-
 ---
 
 ## 💡 Key Takeaways
@@ -95,13 +94,3 @@ Day-10/
 3. **Directory vs. File Execution:** The execute bit (`x`) on a directory allows entering (`cd`) and traversing it, whereas on a file it grants binary/script execution.
 
 ---
-
-> [!TIP]
-> ### 🟢 Continuous Learning
-> 
-> 
-> Check out [cheatsheet.md](https://www.google.com/search?q=./cheatsheet.md) for quick command references and permission calculation formulas!
-
-```
-
-```
