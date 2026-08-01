@@ -59,6 +59,7 @@ echo "Hello DevOps"
 -rw-r--r-- 1 ubuntu ubuntu 31 Aug  1 10:02 script.sh
 
 ```
+<img width="808" height="169" alt="image" src="https://github.com/user-attachments/assets/9e217ee5-6d73-4392-8b0d-96d7bb3b645a" />
 
 ---
 
@@ -72,6 +73,7 @@ cat notes.txt
 
 
 *Output:* `Welcome to Day 10 of the DevOps Journey!`
+
 2. **View `script.sh` in read-only mode:**
 ```bash
 vim -R script.sh
@@ -116,6 +118,7 @@ devops:x:1001:1001::/home/devops:/bin/bash
 
 ```
 
+<img width="833" height="358" alt="image" src="https://github.com/user-attachments/assets/16b5b6ea-1b2d-4f5b-8ae6-56b8e46acf82" />
 
 
 ---
@@ -168,6 +171,7 @@ chmod +x script.sh
 
 
 *Output:* `Hello DevOps`
+
 2. **Set `devops.txt` to read-only (remove write permission for all):**
 ```bash
 chmod a-w devops.txt
@@ -177,6 +181,7 @@ ls -l devops.txt
 
 
 *Permissions:* `-r--r--r--` (`444`)
+
 3. **Set `notes.txt` to `640`:**
 ```bash
 chmod 640 notes.txt
@@ -186,6 +191,7 @@ ls -l notes.txt
 
 
 *Permissions:* `-rw-r-----` (`640` - Owner: `rw`, Group: `r`, Others: `none`)
+
 4. **Create directory `project/` with permissions `755`:**
 ```bash
 mkdir project
@@ -194,6 +200,7 @@ ls -ld project
 
 ```
 
+<img width="887" height="265" alt="image" src="https://github.com/user-attachments/assets/ca9186e8-9392-4b70-a268-a9025cccfafc" />
 
 *Permissions:* `drwxr-xr-x` (`755` - Owner: `rwx`, Group: `r-x`, Others: `r-x`)
 
@@ -229,6 +236,7 @@ bash: ./script.sh: Permission denied
 
 ```
 
+<img width="858" height="149" alt="image" src="https://github.com/user-attachments/assets/368b93a6-75f8-4296-bc60-7f9a386cbf3b" />
 
 
 ---
