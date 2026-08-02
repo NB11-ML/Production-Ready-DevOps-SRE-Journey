@@ -41,7 +41,66 @@ Day-11/
 └── README.md                      # Module documentation
 
 ```
+```mermaid
+graph TD
+    %% Nodes
+    Start([Linux File Ownership Mastery])
+    Concept[1. Inspect File Ownership Metadata]
+    Analysis["Anatomy: -rw-r--r-- 1 owner group size date file"]
+    Operations{Ownership Change Type}
+    
+    ChownUser["sudo chown user file"]
+    ChgrpGroup["sudo chgrp group file"]
+    ChownGroup["sudo chown :group file"]
+    ChownBoth["sudo chown user:group file"]
+    ChownRec["sudo chown -R user:group dir/"]
+    
+    Verify["2. Verify Changes: ls -l / ls -lR"]
+    BestPractices[3. Enterprise & DevOps Best Practices]
+    
+    BP1["• Pre-create Users/Groups"]
+    BP2["• Enforce Least Privilege"]
+    BP3["• Service Isolation e.g., www-data"]
+    Done([✅ Ownership Management Complete])
 
+    %% Connections
+    Start --> Concept
+    Concept -->|ls -l filename| Analysis
+    Analysis --> Operations
+
+    Operations -->|User Only| ChownUser
+    Operations -->|Group Only| ChgrpGroup
+    Operations -->|Group via chown| ChownGroup
+    Operations -->|User + Group| ChownBoth
+    Operations -->|Directory Subtree| ChownRec
+
+    ChownUser --> Verify
+    ChgrpGroup --> Verify
+    ChownGroup --> Verify
+    ChownBoth --> Verify
+    ChownRec --> Verify
+
+    Verify --> BestPractices
+    BestPractices --> BP1
+    BestPractices --> BP2
+    BestPractices --> BP3
+
+    BP1 --> Done
+    BP2 --> Done
+    BP3 --> Done
+
+    %% Styling Definitions
+    classDef main fill:#0d1117,stroke:#58a6ff,stroke-width:2px,color:#c9d1d9;
+    classDef cmd fill:#161b22,stroke:#238636,stroke-width:1.5px,color:#7ee787;
+    classDef concept fill:#161b22,stroke:#8957e5,stroke-width:1.5px,color:#d2a8ff;
+    classDef verify fill:#161b22,stroke:#d29922,stroke-width:1.5px,color:#e3b341;
+
+    %% Class Assignments
+    class Start,Done,Operations main;
+    class Concept,BestPractices concept;
+    class Analysis,Verify verify;
+    class ChownUser,ChgrpGroup,ChownGroup,ChownBoth,ChownRec,BP1,BP2,BP3 cmd;
+```
 ---
 
 ## 🚀 Lab Overview & Tasks
