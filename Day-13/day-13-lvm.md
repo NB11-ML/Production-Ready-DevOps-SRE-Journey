@@ -14,7 +14,7 @@ Run: `lsblk`, `pvs`, `vgs`, `lvs`, `df -h`
 
 ### Task 2: Create Physical Volume
 ```bash
-pvcreate /dev/sdb   # or your loop device
+pvcreate /dev/nvme1n1 dev/nvme2n1 dev/nvme3n1 # or your loop device
 pvs
 ```
 <img width="576" height="287" alt="image" src="https://github.com/user-attachments/assets/fcd32501-9682-4766-8aff-1a2edb61ac50" />
@@ -22,7 +22,7 @@ pvs
 
 ### Task 3: Create Volume Group
 ```bash
-vgcreate devops-vg /dev/sdb
+vgcreate nb11_vg /dev/nvme1n1 /dev/nvme2n1
 vgs
 ```
 
@@ -31,7 +31,7 @@ vgs
 
 ### Task 4: Create Logical Volume
 ```bash
-lvcreate -L 500M -n app-data devops-vg
+lvcreate -L 10G -n nb11_lv nb11_vg
 lvs
 ```
 
@@ -40,9 +40,9 @@ lvs
 
 ### Task 5: Format and Mount
 ```bash
-mkfs.ext4 /dev/devops-vg/app-data
+mkfs.ext4 /dev/nb11_vg/nb11_lv
 mkdir -p /mnt/app-data
-mount /dev/devops-vg/app-data /mnt/app-data
+mount /dev/nb11_vg/nb11_lv /mnt/app-data
 df -h /mnt/app-data
 ```
 
@@ -51,8 +51,8 @@ df -h /mnt/app-data
 
 ### Task 6: Extend the Volume
 ```bash
-lvextend -L +200M /dev/devops-vg/app-data
-resize2fs /dev/devops-vg/app-data
+lvextend -L +1G /dev/nb11_vg/nb11_lv
+resize2fs /dev/nb11_vg/nb11_lv
 df -h /mnt/app-data
 ```
 
