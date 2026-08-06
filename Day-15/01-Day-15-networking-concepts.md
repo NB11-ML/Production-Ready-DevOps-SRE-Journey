@@ -19,6 +19,28 @@ Welcome to **Day 15 of the #90DaysOfDevOps Challenge**! Today’s session builds
 ### 1. What happens when you type `google.com` in a browser?
 When you type `google.com`, your browser first checks its local cache and the OS cache for the IP address. If not found, a query is sent to a **Recursive DNS Resolver** (e.g., your ISP or `8.8.8.8`), which iteratively queries the **Root Name Servers** (`.`), **TLD Name Servers** (`.com`), and finally the **Authoritative Name Server** for `google.com`. The authoritative server returns the matching IPv4/IPv6 address to the browser, which then establishes a TCP handshake to load the website.
 
+
+```mermaid
+
+flowchart LR
+    Client["💻 Client / Browser<br/>Types google.com"] -->|1. Query IP| Resolver["🌐 Recursive Resolver<br/>(8.8.8.8 / ISP)"]
+    Resolver -->|2. Query Root| Root["👑 Root Server (.)"]
+    Root -->|3. Refer to TLD| Resolver
+    Resolver -->|4. Query TLD| TLD["🏢 TLD Server (.com)"]
+    TLD -->|5. Refer to Authoritative| Resolver
+    Resolver -->|6. Query Domain| Auth["🎯 Authoritative DNS<br/>(ns1.google.com)"]
+    Auth -->|7. Return A Record| Resolver
+    Resolver -->|8. Return IP: 142.250.190.46| Client
+
+    classDef clientStyle fill:#8E44AD,stroke:#6C3483,stroke-width:2px,color:#fff;
+    classDef resolverStyle fill:#2980B9,stroke:#1F618D,stroke-width:2px,color:#fff;
+    classDef serverStyle fill:#16A085,stroke:#117A65,stroke-width:2px,color:#fff;
+
+    class Client clientStyle;
+    class Resolver resolverStyle;
+    class Root,TLD,Auth serverStyle;
+```
+
 ---
 
 ### 2. DNS Record Types Overview
@@ -31,6 +53,7 @@ When you type `google.com`, your browser first checks its local cache and the OS
 ---
 
 ### 3. DNS Lookup (`dig google.com`) Output Analysis
+
 
 Running the command:
 ```bash
@@ -132,6 +155,26 @@ ip addr show
 
 ## 🧮 Task 3: CIDR & Subnetting
 
+```mermaid
+flowchart TD
+    CIDR["CIDR Block: 192.168.1.0/24<br/>Class C Private Subnet"] --> NetBit["Network Bits: 24 Bits<br/>Subnet Mask: 255.255.255.0"]
+    CIDR --> HostBit["Host Bits: 8 Bits<br/>Total Addresses: 2^8 = 256 IPs"]
+    
+    HostBit --> NetAddr["Network Address<br/>192.168.1.0 (Reserved)"]
+    HostBit --> UsableHosts["Usable Host Range<br/>192.168.1.1 — 192.168.1.254<br/>(254 Usable IPs)"]
+    HostBit --> BcastAddr["Broadcast Address<br/>192.168.1.255 (Reserved)"]
+
+    classDef headerBox fill:#2C3E50,stroke:#1A252F,stroke-width:2px,color:#fff;
+    classDef mainBox fill:#2980B9,stroke:#1F618D,stroke-width:2px,color:#fff;
+    classDef detailBox fill:#27AE60,stroke:#1E8449,stroke-width:2px,color:#fff;
+    classDef alertBox fill:#E67E22,stroke:#A04000,stroke-width:2px,color:#fff;
+
+    class CIDR headerBox;
+    class NetBit,HostBit mainBox;
+    class UsableHosts detailBox;
+    class NetAddr,BcastAddr alertBox;
+```
+
 ### 1. What does `/24` mean in `192.168.1.0/24`?
 
 The **`/24`** prefix length indicates that the first **24 bits** of the 32-bit IP address represent the **Network Identifier**, leaving the remaining **8 bits** for **Host Addresses**. In subnet mask notation, this corresponds to `255.255.255.0`.
@@ -176,6 +219,25 @@ Subnetting divides a large network into smaller, manageable sub-networks (subnet
 ### 1. What is a port and why do we need them?
 
 A **Port** is a 16-bit numerical identifier (ranging from `0` to `65535`) assigned to network processes on an operating system. While an IP address identifies a specific **machine** on a network, a port identifies a specific **service or application** running on that machine. We need ports to allow multiplexing—enabling a single server to host multiple network services simultaneously (e.g., HTTP on port 80 and SSH on port 22).
+
+```mermaid
+flowchart TD
+    Host["🖥️ Server IP: 10.0.1.50<br/>(Single Machine / EC2 Instance)"] --> P22["Port 22<br/>SSH (Remote Admin)"]
+    Host --> P80["Port 80<br/>HTTP (Web Traffic)"]
+    Host --> P443["Port 443<br/>HTTPS (Encrypted Web)"]
+    Host --> P3306["Port 3306<br/>MySQL Database"]
+    Host --> P6379["Port 6379<br/>Redis Cache"]
+
+    classDef serverBox fill:#2C3E50,stroke:#111,stroke-width:2px,color:#fff;
+    classDef webPort fill:#27AE60,stroke:#1E8449,stroke-width:2px,color:#fff;
+    classDef dbPort fill:#E67E22,stroke:#A04000,stroke-width:2px,color:#fff;
+    classDef cachePort fill:#8E44AD,stroke:#6C3483,stroke-width:2px,color:#fff;
+
+    class Host serverBox;
+    class P22,P80,P443 webPort;
+    class P3306 dbPort;
+    class P6379 cachePort;
+```
 
 ---
 
