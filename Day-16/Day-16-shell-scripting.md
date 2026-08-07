@@ -41,6 +41,8 @@ $ ./hello.sh
 Hello, DevOps!
 
 ```
+<img width="734" height="260" alt="image" src="https://github.com/user-attachments/assets/a2fdd16e-8869-4160-bad0-575df7950ccb" />
+
 
 **What happens if you remove the shebang line?**
 
@@ -68,8 +70,8 @@ If you remove `#!/bin/bash`, the script will still execute in most standard envi
 #!/bin/bash
 # Description: Demonstrate variables and quote differences
 
-NAME="Shubham"
-ROLE="DevOps Engineer"
+NAME="NB11ML"
+ROLE="Site Reliability Engineer"
 
 # Double quotes allow variable expansion
 echo "Hello, I am $NAME and I am a$ROLE"
@@ -84,14 +86,15 @@ echo 'Hello, I am $NAME and I am a$ROLE'
 ```bash
 $ chmod +x variables.sh
 $ ./variables.sh
-Hello, I am Shubham and I am a DevOps Engineer
-Hello, I am $NAME and I am a$ROLE
+Hello, I am NB11ML and I am a Site Reliability Engineer
 
 ```
+<img width="729" height="381" alt="image" src="https://github.com/user-attachments/assets/7d6c1cf4-c9b3-41b9-9bbd-d4d595d14099" />
+
 
 **Difference between single quotes (`'...'`) and double quotes (`"..."`):**
 
-* **Double Quotes (`"`):** Support variable expansion (e.g., `$NAME` evaluates to `Shubham`) and command evaluation.
+* **Double Quotes (`"`):** Support variable expansion (e.g., `$NAME` evaluates to `NB11ML`) and command evaluation.
 * **Single Quotes (`'`):** Treat all enclosed characters as literal strings, suppressing variable expansion completely.
 
 ---
@@ -114,7 +117,7 @@ Hello, I am $NAME and I am a$ROLE
 read -p "Enter your name: " NAME
 read -p "Enter your favourite tool: " TOOL
 
-echo "Hello $NAME, your favourite tool is$TOOL"
+echo "Hello $NAME, your favourite tool is $TOOL"
 
 ```
 
@@ -123,11 +126,13 @@ echo "Hello $NAME, your favourite tool is$TOOL"
 ```bash
 $ chmod +x greet.sh
 $ ./greet.sh
-Enter your name: Alice
-Enter your favourite tool: Docker
-Hello Alice, your favourite tool is Docker
+Enter your name: NB11ML
+Enter your favourite tool: VSCode
+Hello NB11ML, your favourite tool is VSCode
 
 ```
+
+<img width="735" height="369" alt="image" src="https://github.com/user-attachments/assets/39f396a9-8568-47c4-8c3e-aa1247b9fd23" />
 
 ---
 
@@ -146,9 +151,9 @@ Hello Alice, your favourite tool is Docker
 
 read -p "Enter a number: " NUM
 
-if [ "$NUM" -gt 0 ]; then
+if (( NUM > 0 )); then
     echo "The number $NUM is positive."
-elif [ "$NUM" -lt 0 ]; then
+elif (( NUM < 0 )); then
     echo "The number $NUM is negative."
 else
     echo "The number is zero."
@@ -161,11 +166,11 @@ fi
 ```bash
 $ chmod +x check_number.sh
 $ ./check_number.sh
-Enter a number: 15
+Enter a number: 11
 The number 15 is positive.
 
 $ ./check_number.sh
-Enter a number: -7
+Enter a number: -9
 The number -7 is negative.
 
 $ ./check_number.sh
@@ -173,6 +178,7 @@ Enter a number: 0
 The number is zero.
 
 ```
+<img width="732" height="581" alt="image" src="https://github.com/user-attachments/assets/922bc6e3-243c-491f-8792-8330c69b3adc" />
 
 #### 2. File Check Script (`file_check.sh`)
 
@@ -209,6 +215,8 @@ Enter filename to check: non_existent.txt
 File 'non_existent.txt' does not exist.
 
 ```
+<img width="734" height="459" alt="image" src="https://github.com/user-attachments/assets/e0046b0b-d0a3-45d1-a692-bce11d370d06" />
+
 
 ---
 
@@ -227,41 +235,44 @@ Create `server_check.sh` that:
 #!/bin/bash
 # Description: Interactive service health status checker
 
-SERVICE="sshd"
+read -p "Enter service name: " SERVICE
+read -p "Please verify you want to check status of $SERVICE: " RESPONSE
 
-read -p "Do you want to check the status of $SERVICE? (y/n): " RESPONSE
-
-if [ "$RESPONSE" = "y" ] \vert{}\vert{} [ "$RESPONSE" = "Y" ]; then
+if [[ "$RESPONSE" == [yY] ]]; then
     echo "Checking status for service: $SERVICE..."
     if systemctl is-active --quiet "$SERVICE"; then
         echo "Service '$SERVICE' is ACTIVE."
     else
-        echo "Service '$SERVICE' is NOT active."
+        echo "Service '$SERVICE' is NOT Active."
     fi
-elif [ "$RESPONSE" = "n" ] \vert{}\vert{} [ "$RESPONSE" = "N" ]; then
+elif [[ "$RESPONSE" == [nN] ]]; then
     echo "Skipped."
 else
-    echo "Invalid response. Please enter 'y' or 'n'."
-fi
+    echo "Invalid response. Please Enter 'y' or 'n'."
+fi 
 
 ```
 
 **Execution & Output:**
 
 ```bash
-$ chmod +x server_check.sh
 $ ./server_check.sh
-Do you want to check the status of sshd? (y/n): y
+Enter service name: sshd
+Please verify you want to check status of sshd: Y
 Checking status for service: sshd...
 Service 'sshd' is ACTIVE.
 
 $ ./server_check.sh
-Do you want to check the status of sshd? (y/n): n
+Enter service name: sshd
+Please verify you want to check status of sshd: n
 Skipped.
 
 ```
 
 ---
+
+<img width="736" height="743" alt="image" src="https://github.com/user-attachments/assets/ddfe48e6-d256-451b-b4f4-59987239a269" />
+
 
 ## Key Learnings
 
@@ -277,7 +288,7 @@ Using standard conditional constructs (`if [ condition ]; then ... fi`) allows s
 ## Hints Reference
 
 * Shebang: `#!/bin/bash` tells the system which interpreter to use
-* Variables: `NAME="Shubham"` (no spaces around `=`)
+* Variables: `NAME="MB11ML` (no spaces around `=`)
 * Read: `read -p "Enter name: " NAME`
 * If syntax: `if [ condition ]; then ... elif ... else ... fi`
 * File check: `if [ -f filename ]; then`
