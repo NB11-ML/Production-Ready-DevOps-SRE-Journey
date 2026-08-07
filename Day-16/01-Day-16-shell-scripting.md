@@ -1,5 +1,6 @@
 # Day 16 – Shell Scripting Basics
 
+
 ## Task
 Start your shell scripting journey — learn the fundamentals every script needs.
 
@@ -7,6 +8,35 @@ You will:
 - Understand **shebang** (`#!/bin/bash`) and why it matters
 - Work with **variables**, **echo**, and **read**
 - Write basic **if-else** conditions
+
+
+```mermaid
+graph TD
+    %% Custom Styling
+    classDef startEnd fill:#1a1a2e,stroke:#16c79a,stroke-width:2px,color:#fff;
+    classDef fileNode fill:#1f4068,stroke:#3b6978,stroke-width:1px,color:#fff;
+    classDef engine fill:#e43f5a,stroke:#b11a31,stroke-width:1px,color:#fff;
+
+    %% Flow Architecture
+    Run([User runs ./script.sh]) ---> Check[OS reads 1st line of file]
+    class Run startEnd;
+    class Check engine;
+
+    Check ---> Line1{"Is it #!/bin/bash?"}
+    class Line1 engine;
+
+    Line1 --->|Yes: Shebang Found| LoadBash[OS launches /bin/bash engine]
+    LoadBash ---> ExecBash[Bash executes all remaining script code line-by-line]
+    class LoadBash,ExecBash fileNode;
+
+    Line1 --->|No Shebang| DefaultShell[OS falls back to user's current terminal shell environment]
+    DefaultShell ---> ExecFallback[Runs script code, but unique Bash syntax might crash if shell differs]
+    class DefaultShell,ExecFallback fileNode;
+
+    ExecBash & ExecFallback ---> End([Script Finished])
+    class End startEnd;
+
+```
 
 ---
 
