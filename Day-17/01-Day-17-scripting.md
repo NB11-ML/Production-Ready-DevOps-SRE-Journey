@@ -215,13 +215,19 @@ fi
 
 PACKAGES=("nginx" "curl" "wget")
 
+# 1. Update package lists ONCE before looping
+echo "[INFO] Updating package indices..."
+apt-get update -qq
+
+# 2. Loop through packages and install missing ones
 for PKG in "${PACKAGES[@]}"; do
     if dpkg -s "$PKG" &> /dev/null; then
         echo "[EXISTS] Package '$PKG' is already installed."
     else
         echo "[INSTALLING] Package '$PKG' is missing. Installing..."
-        apt-get update -qq && apt-get install -y "$PKG" &> /dev/null
-        if [ $? -eq 0 ]; then
+        
+        # Directly test command execution in the if statement
+        if apt-get install -y "$PKG" &> /dev/null; then
             echo "[SUCCESS] Package '$PKG' installed successfully."
         else
             echo "[ERROR] Failed to install '$PKG'."
@@ -248,6 +254,8 @@ $ sudo ./install_packages.sh
 [EXISTS] Package 'wget' is already installed.
 
 ```
+
+<img width="1465" height="832" alt="image" src="https://github.com/user-attachments/assets/86d1f710-9b7a-43fc-aa68-f6329a900501" />
 
 ---
 
@@ -291,6 +299,9 @@ File created at: /tmp/devops-test/devops_file.txt
 
 ```
 
+<img width="740" height="552" alt="image" src="https://github.com/user-attachments/assets/cbd74e08-6662-40b0-b697-f0aadcc9a0a8" />
+
+
 ---
 
 ## Key Learnings
@@ -319,7 +330,5 @@ File created at: /tmp/devops-test/devops_file.txt
 * Positional Arguments: `$1` first arg, `$#` total count, `$@` all args, `$0` script name
 * Check root permissions: `if [ "$EUID" -ne 0 ]; then echo "Run as root"; exit 1; fi`
 * Check Debian package: `dpkg -s <pkg> &> /dev/null && echo "installed"`
-
----
 
 ---
