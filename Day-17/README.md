@@ -8,15 +8,19 @@ Welcome to **Day 17** of the Production-Ready DevOps & SRE Journey! Today's focu
 
 ```text
 Day-17/
-├── 📄 README.md              # Day 17 overview
-├── 📄 day-17-scripting.md    # Detailed documentation & output logs
-├── 📜 for_loop.sh           # Array iteration example
-├── 📜 count.sh              # Range loop (1 to 10)
-├── 📜 countdown.sh          # Interactive while-loop timer
-├── 📜 greet.sh              # Input validation ($1 check)
-├── 📜 args_demo.sh           # Special Bash arguments demo ($0, $#, $@)
-├── 📜 install_packages.sh   # Root verification ($EUID) & automated package installer
-└── 📜 safe_script.sh        # Defensive scripting with set -e and fallbacks
+├── 📖 Documentation
+│   ├── 📄 README.md                            # Main Day 17 overview
+│   ├── 📄 01-Day-17-scripting.md              # Detailed notes & execution logs
+│   └── 📄 02-Day-17-scripting-Cheat-Sheet.md   # Shell scripting cheat sheet
+│
+└── 📜 Scripts
+    ├── 📜 for_loop.sh                         # Array iteration & loop syntax
+    ├── 📜 count.sh                            # Range loop demonstration (1 to 10)
+    ├── 📜 countdown.sh                        # Interactive while-loop timer
+    ├── 📜 greet.sh                            # Positional parameter validation ($1 check)
+    ├── 📜 args_demo.sh                        # Special Bash arguments ($0,$#, $@, $?)
+    ├── 📜 install_packages.sh                 # Root verification ($EUID) & automated package installer
+    └── 📜 safe_script.sh                      # Defensive scripting (set -e, set -u, set -o pipefail)
 
 ```
 
@@ -36,10 +40,10 @@ Day-17/
 Make scripts executable and run them directly:
 
 ```bash
-# Grant execution permissions
+# Grant execution permissions to all scripts
 chmod +x *.sh
 
-# Run package installer (requires root)
+# Run package installer (requires root privileges)
 sudo ./install_packages.sh
 
 ```
@@ -48,10 +52,8 @@ sudo ./install_packages.sh
 
 ## 💡 Key Takeaways
 
-* Validate arguments (`if [ -z "$1" ]`) before executing logic to avoid crashes.
-* Enforce root permissions using `if [ "$EUID" -ne 0 ]` for administrative tasks.
-* Add `set -e` to stop script execution immediately if any command fails.
-
-```
+* **Validate Inputs Early:** Check positional arguments (`if [ -z "$1" ]`) before executing script logic.
+* **Enforce Permissions:** Verify root execution (`if [ "$EUID" -ne 0 ]`) for administrative scripts.
+* **Fail-Fast Directives:** Use `set -e` and `set -u` at the top of production scripts to halt execution on unexpected failures or uninitialized variables.
 
 ```
