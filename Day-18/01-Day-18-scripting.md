@@ -1,53 +1,45 @@
-# Day 18 – Shell Scripting: Functions, System Monitoring & Automated Backups
+# Day 18 – Shell Scripting: Functions & Intermediate Concepts
 
 ## Task
-Level up your production scripting skills by writing modular functions, monitoring system metrics, parsing log files, and automating tasks using Crontab.
+Write cleaner, reusable scripts — learn functions, strict mode, and real-world patterns.
 
----
-
-## Expected Output
-- A markdown file: `01-Day-18-scripting.md`
-- All scripts created during the challenge tasks
+You will:
+- Write and call **functions**
+- Use `set -euo pipefail` for safer scripts
+- Work with **return values** and **local variables**
+- Build an intermediate script
 
 ---
 
 ## Challenge Tasks
 
-### Task 1: Reusable Functions (`functions.sh`)
-1. Create `functions.sh` that defines modular functions:
-   - `log_message()`: Takes a level and message, printing it with a timestamp `[YYYY-MM-DD HH:MM:SS]`.
-   - `check_service()`: Takes a service name as an argument and checks its active status.
-2. Call both functions in the main execution block.
+### Task 1: Basic Functions
+1. Create `functions.sh` with:
+   - A function `greet` that takes a name as an argument and prints `Hello, <name>!`
+   - A function `add` that takes two numbers and prints their sum
+2. Call both functions from the script.
 
 **Script Code (`functions.sh`):**
 ```bash
 #!/bin/bash
-# Description: Demonstrate reusable functions and timestamped logging in Bash
+# Description: Demonstrate basic Bash functions and argument passing
 
-log_message() {
-    local LEVEL="$1"
-    local MSG="$2"
-    echo "[$(date +'%Y-%m-%d %H:%M:%S')] [$LEVEL] $MSG"
+greet() {
+    echo "Hello, $1!"
 }
 
-check_service() {
-    local SERVICE="$1"
-    log_message "INFO" "Checking status for service: $SERVICE"
-    
-    if systemctl is-active --quiet "$SERVICE"; then
-        log_message "SUCCESS" "Service '$SERVICE' is running."
-        return 0
-    else
-        log_message "WARNING" "Service '$SERVICE' is NOT running."
-        return 1
-    fi
+add() {
+    local SUM=$(($1 + $2))
+    echo "The sum of $1 and $2 is: $SUM"
 }
 
-# Main Execution Block
-log_message "INFO" "Script execution started."
-check_service "sshd"
-check_service "nginx" || log_message "ERROR" "Nginx needs attention!"
-log_message "INFO" "Script execution completed."
+# Main Execution
+echo "=== Calling Basic Functions ==="
+greet "NB11ML"
+greet "DevOps Engineer"
+
+add 15 25
+add 100 45
 
 ```
 
@@ -56,335 +48,288 @@ log_message "INFO" "Script execution completed."
 ```bash
 $ chmod +x functions.sh
 $ ./functions.sh
-[2026-08-09 16:30:00] [INFO] Script execution started.
-[2026-08-09 16:30:00] [INFO] Checking status for service: sshd
-[2026-08-09 16:30:00] [SUCCESS] Service 'sshd' is running.
-[2026-08-09 16:30:00] [INFO] Checking status for service: nginx
-[2026-08-09 16:30:00] [SUCCESS] Service 'nginx' is running.
-[2026-08-09 16:30:00] [INFO] Script execution completed.
+=== Calling Basic Functions ===
+Hello, NB11ML!
+Hello, DevOps Engineer!
+The sum of 15 and 25 is: 40
+The sum of 100 and 45 is: 145
 
 ```
 
 **Detailed Code Explanation:**
 
-* **`local` Keyword:** Declaring variables with `local LEVEL="$1"` ensures variables stay inside the function scope, preventing accidental overwrites of global script variables.
-* **`systemctl is-active --quiet`:** Checks if a service is actively running. The `--quiet` flag suppresses output so the script can handle custom logging cleanly.
-* **Return Codes (`return 0` vs `return 1`):** Returning `0` signals success to Bash, whereas `1` signals failure. This allows the use of logical OR (`||`) operators like `check_service "nginx" || log_message "ERROR" ...`.
+* **Function Arguments:** In Bash, functions don't declare parameters in parentheses like Python. Instead, you pass arguments directly after the function call (`greet "NB11ML"`), and inside the function, they are accessed as positional parameters (`$1`, `$2`, etc.).
+* **Arithmetic Evaluation:** The syntax `$(( ... ))` is used to perform mathematical addition before assigning the result to the `SUM` variable.
 
 ---
 
-### Task 2: System Health Monitor (`monitor_system.sh`)
+### Task 2: Functions with Return Values
 
-1. Create `monitor_system.sh` that:
-* Extracts current **Disk Usage (%)** on root `/`.
-* Extracts current **Memory Usage (%)**.
-* Compares metrics against a predefined safety threshold (e.g., `80%`).
-* Prints an `[ALERT]` if usage exceeds the limit, otherwise prints `[OK]`.
-
+1. Create `disk_check.sh` with:
+* A function `check_disk` that checks disk usage of `/` using `df -h`
+* A function `check_memory` that checks free memory using `free -h`
+* A main section that calls both and prints the results
 
 
-**Script Code (`monitor_system.sh`):**
+
+**Script Code (`disk_check.sh`):**
 
 ```bash
 #!/bin/bash
-# Description: Monitor Disk and Memory thresholds and trigger alerts
+# Description: Modular system checks using functions
 
-THRESHOLD=80
+check_disk() {
+    echo "--- Root Disk Usage ---"
+    df -h /
+}
 
-echo "=== System Health Metrics Check ==="
+check_memory() {
+    echo "--- System Memory ---"
+    free -h
+}
 
-# 1. Check Disk Usage on Root Partition
-DISK_USAGE=$(df -h / | awk 'NR==2 {print $5}' | tr -d '%')
-echo "Current Disk Usage: ${DISK_USAGE}%"
-
-if [ "$DISK_USAGE" -gt "$THRESHOLD" ]; then
-    echo "[ALERT] Disk usage exceeded threshold of ${THRESHOLD}%!"
-else
-    echo "[OK] Disk usage is within safe limits."
-fi
-
-# 2. Check Memory Usage Percentage
-MEM_USAGE=$(free | awk '/Mem:/ {printf("%.0f", $3/$2 * 100)}')
-echo "Current Memory Usage: ${MEM_USAGE}%"
-
-if [ "$MEM_USAGE" -gt "$THRESHOLD" ]; then
-    echo "[ALERT] Memory usage exceeded threshold of ${THRESHOLD}%!"
-else
-    echo "[OK] Memory usage is within safe limits."
-fi
+# Main Execution
+echo "=== Running System Checks ==="
+check_disk
+echo ""
+check_memory
 
 ```
 
 **Execution & Output:**
 
 ```bash
-$ chmod +x monitor_system.sh
-$ ./monitor_system.sh
-=== System Health Metrics Check ===
-Current Disk Usage: 34%
-[OK] Disk usage is within safe limits.
-Current Memory Usage: 42%
-[OK] Memory usage is within safe limits.
+$ chmod +x disk_check.sh
+$ ./disk_check.sh
+=== Running System Checks ===
+--- Root Disk Usage ---
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/sda1        50G   15G   33G  32% /
+
+--- System Memory ---
+               total        used        free      shared  buff/cache   available
+Mem:           7.8Gi       2.1Gi       4.5Gi        50Mi       1.2Gi       5.4Gi
+Swap:          2.0Gi          0B       2.0Gi
 
 ```
 
 **Detailed Code Explanation:**
 
-* **`df -h / | awk 'NR==2 {print $5}' | tr -d '%'`**:
-* `df -h /`: Displays disk filesystem statistics for root `/`.
-* `awk 'NR==2 {print $5}'`: Selects the 2nd line (`NR==2`) and extracts the 5th column (`Use%`).
-* `tr -d '%'`: Strips the `%` character so Bash can evaluate it as a raw integer.
-
-
-* **`free | awk '/Mem:/ {printf("%.0f", $3/$2 * 100)}'`**:
-* `free`: Displays total, used, and free system memory.
-* `awk '/Mem:/ ...'`: Searches for the memory row, divides used memory (`$3`) by total memory (`$2`), multiplies by 100, and rounds to a whole integer (`%.0f`).
-
-
-* **`[ "$DISK_USAGE" -gt "$THRESHOLD" ]`**: Evaluates whether current utilization is strictly greater than the integer threshold limit.
+* **Standard Output as Return:** In standard programming languages, functions `return` strings. In Bash, functions `return` exit codes (0-255). To "return" data (like the output of `df` or `free`), functions simply execute commands or use `echo`, which sends the text to standard output (`stdout`) where the main script displays it.
 
 ---
 
-### Task 3: Log Parser (`log_parser.sh`)
+### Task 3: Strict Mode — `set -euo pipefail`
 
-1. Create `log_parser.sh` that:
-* Accepts a log file path as `$1` (defaults to `/var/log/nginx/access.log`).
-* Counts total log entries.
-* Parses and lists the top 5 IP addresses hitting the server.
-* Counts occurrences of `404 Not Found` HTTP status codes.
+Create `strict_demo.sh` to test strict mode flags.
 
-
-
-**Script Code (`log_parser.sh`):**
+**Script Code (`strict_demo.sh`):**
 
 ```bash
 #!/bin/bash
-# Description: Parse web access logs for client IP frequency and HTTP 404 errors
+# Description: Demonstrating strict mode behaviors. 
+# Note: Uncomment one test at a time to see how the script fails.
 
-LOG_FILE="${1:-/var/log/nginx/access.log}"
+set -euo pipefail
 
-# Check if file exists
-if [ ! -f "$LOG_FILE" ]; then
-    echo "Error: Log file '$LOG_FILE' does not exist."
-    exit 1
-fi
+echo "Strict mode is active."
 
-echo "=== Log Analysis Report for: $LOG_FILE ==="
-echo "Total Request Count: $(wc -l < "$LOG_FILE")"
+# --- Test 1: Undefined Variable ---
+# echo "Trying to use undefined variable: $UNSET_VAR"
 
-echo "-----------------------------------"
-echo "Top 5 Client IP Addresses:"
-awk '{print $1}' "$LOG_FILE" | sort | uniq -c | sort -nr | head -n 5
+# --- Test 2: Failing Command ---
+# ls /directory/that/does/not/exist
+# echo "This line will never run if the command above fails."
 
-echo "-----------------------------------"
-echo "Total 404 Not Found Errors:"
-grep -c ' 404 ' "$LOG_FILE" || echo "0"
+# --- Test 3: Piped Command Failure ---
+# ls /fake/dir | grep "txt"
+# echo "This line will never run if the pipe fails."
+
+echo "If you see this, no strict mode rules were broken!"
+
+```
+
+**Documentation:**
+
+* **`set -e`** $\rightarrow$ **Exit on Error:** Forces the script to exit immediately if *any* command returns a non-zero exit status (meaning it failed). Without this, Bash will blindly continue to the next line even if a critical command fails.
+* **`set -u`** $\rightarrow$ **Exit on Undefined Variable:** Treats unset (uninitialized) variables as errors and exits immediately. This prevents accidental destructive commands like `rm -rf /$MISSING_VAR` (which evaluates to `rm -rf /`).
+* **`set -o pipefail`** $\rightarrow$ **Catch Pipe Failures:** By default, Bash only looks at the exit code of the *last* command in a pipe. If `command1 | command2` is run and `command1` fails but `command2` succeeds, Bash considers the whole pipe successful. `pipefail` changes this: if *any* command in the pipeline fails, the whole pipeline fails.
+
+---
+
+### Task 4: Local Variables
+
+Create `local_demo.sh` to demonstrate variable scoping.
+
+**Script Code (`local_demo.sh`):**
+
+```bash
+#!/bin/bash
+# Description: Demonstrate the difference between global and local variables
+
+# Global Variable
+USER_ROLE="Admin"
+
+demo_scope() {
+    # Local Variable (Only exists inside this function)
+    local INTERNAL_VAR="Secret Data"
+    
+    # Modifying the Global Variable
+    USER_ROLE="Guest"
+    
+    echo "Inside function: INTERNAL_VAR = $INTERNAL_VAR"
+    echo "Inside function: USER_ROLE = $USER_ROLE"
+}
+
+echo "Before function: USER_ROLE = $USER_ROLE"
+
+demo_scope
+
+echo "After function: USER_ROLE = $USER_ROLE"
+echo "After function: INTERNAL_VAR = $INTERNAL_VAR (Notice this is blank!)"
 
 ```
 
 **Execution & Output:**
 
 ```bash
-$ chmod +x log_parser.sh
-$ ./log_parser.sh /var/log/nginx/access.log
-=== Log Analysis Report for: /var/log/nginx/access.log ===
-Total Request Count: 1420
------------------------------------
-Top 5 Client IP Addresses:
-    450 192.168.1.105
-    310 10.0.0.12
-    180 172.16.0.4
-     95 192.168.1.200
-     40 127.0.0.1
------------------------------------
-Total 404 Not Found Errors:
-12
+$ chmod +x local_demo.sh
+$ ./local_demo.sh
+Before function: USER_ROLE = Admin
+Inside function: INTERNAL_VAR = Secret Data
+Inside function: USER_ROLE = Guest
+After function: USER_ROLE = Guest
+After function: INTERNAL_VAR =  (Notice this is blank!)
 
 ```
 
 **Detailed Code Explanation:**
 
-* **`${1:-/var/log/nginx/access.log}`**: Parameter expansion trick. If positional parameter `$1` is passed by the user, it uses `$1`; otherwise, it falls back to `/var/log/nginx/access.log`.
-* **Pipeline Breakdown (`awk '{print $1}' | sort | uniq -c | sort -nr | head -n 5`)**:
-* `awk '{print $1}'`: Extracts column 1 (client IP address in standard web access logs).
-* `sort`: Sorts IP addresses sequentially (required before `uniq`).
-* `uniq -c`: Filters duplicate consecutive lines and prepends each line with its frequency count.
-* `sort -nr`: Sorts the aggregated list **n**umerically in **r**everse order (highest traffic first).
-* `head -n 5`: Limits output to the top 5 IP addresses.
-
-
-* **`grep -c ' 404 '`**: The `-c` flag counts matching lines containing spaces around `404` to prevent false positives with timestamps or file sizes containing 404.
+* **Global by Default:** Variables in Bash are completely global by default, even if declared inside a function. Notice how `USER_ROLE` changed from "Admin" to "Guest" globally after the function ran.
+* **`local` Keyword:** Prepending `local` restricts the variable to that function's scope. `INTERNAL_VAR` completely disappears once the function finishes executing.
 
 ---
 
-### Task 4: Automated Backup Script (`backup.sh`)
+### Task 5: Build a Script — System Info Reporter
 
-1. Create `backup.sh` that:
-* Takes a **source directory** (`$1`) and a **backup destination directory** (`$2`).
-* Generates a timestamped tarball archive (`backup_YYYY-MM-DD_HHMMSS.tar.gz`).
-* Implements retention logic to delete backup archives older than **7 days**.
+Create `system_info.sh` that uses strict mode, functions for everything, and clean formatting.
 
-
-
-**Script Code (`backup.sh`):**
+**Script Code (`system_info.sh`):**
 
 ```bash
 #!/bin/bash
-# Description: Compress target directory and enforce 7-day retention policy
+# Description: Comprehensive System Information Reporter
 
-SRC_DIR="$1"
-DEST_DIR="$2"
+set -euo pipefail
 
-# 1. Validate Command Line Arguments
-if [ -z "$SRC_DIR" ] || [ -z "$DEST_DIR" ]; then
-    echo "Usage: $0 <source_directory> <backup_destination>"
-    exit 1
-fi
+print_os_info() {
+    echo "=== 🖥️  Hostname & OS Info ==="
+    echo "Hostname: $(hostname)"
+    # Extract PRETTY_NAME from os-release to get a clean OS string
+    grep "^PRETTY_NAME=" /etc/os-release | cut -d '"' -f 2
+    echo ""
+}
 
-# 2. Verify Source Directory Existence
-if [ ! -d "$SRC_DIR" ]; then
-    echo "Error: Source directory '$SRC_DIR' does not exist."
-    exit 1
-fi
+print_uptime() {
+    echo "=== ⏱️  System Uptime ==="
+    uptime -p
+    echo ""
+}
 
-# Create Destination Directory if missing
-mkdir -p "$DEST_DIR"
+print_disk_usage() {
+    echo "=== 💾 Top 5 Disk Partitions (By Size) ==="
+    # Print header, then sort by size (column 2) in reverse human-readable format
+    df -h | head -n 1
+    df -h | sed '1d' | sort -hr -k 2 | head -n 5
+    echo ""
+}
 
-# 3. Generate Timestamped Archive Name
-TIMESTAMP=$(date +'%Y-%m-%d_%H%M%S')
-BACKUP_FILE="$DEST_DIR/backup_$TIMESTAMP.tar.gz"
+print_memory() {
+    echo "=== 🧠 Memory Usage ==="
+    free -h
+    echo ""
+}
 
-echo "[INFO] Creating backup of '$SRC_DIR' at '$BACKUP_FILE'..."
-tar -czf "$BACKUP_FILE" -C "$SRC_DIR" .
+print_top_cpu() {
+    echo "=== 🔥 Top 5 CPU-Consuming Processes ==="
+    # Show PID, User, %CPU, %MEM, and Command, sorted by %CPU
+    ps -eo pid,user,%cpu,%mem,comm --sort=-%cpu | head -n 6
+    echo ""
+}
 
-if [ $? -eq 0 ]; then
-    echo "[SUCCESS] Backup completed successfully."
-else
-    echo "[ERROR] Backup process failed!"
-    exit 1
-fi
+main() {
+    echo "========================================="
+    echo "       SYSTEM INFORMATION REPORT         "
+    echo "       Generated: $(date +'%Y-%m-%d')      "
+    echo "========================================="
+    echo ""
+    
+    print_os_info
+    print_uptime
+    print_disk_usage
+    print_memory
+    print_top_cpu
+    
+    echo "========================================="
+    echo "          REPORT COMPLETE                "
+    echo "========================================="
+}
 
-# 4. Enforce 7-Day Retention Cleanup
-echo "[INFO] Cleaning up backups older than 7 days..."
-find "$DEST_DIR" -type f -name "backup_*.tar.gz" -mtime +7 -exec rm -f {} \;
-echo "[SUCCESS] Retention cleanup completed."
+# Execute main block
+main
 
 ```
 
 **Execution & Output:**
-
-```bash
-$ chmod +x backup.sh
-$ ./backup.sh /var/www/html /var/backups/www
-[INFO] Creating backup of '/var/www/html' at '/var/backups/www/backup_2026-08-09_163000.tar.gz'...
-[SUCCESS] Backup completed successfully.
-[INFO] Cleaning up backups older than 7 days...
-[SUCCESS] Retention cleanup completed.
-
-```
-
-**Detailed Code Explanation:**
-
-* **`tar -czf "$BACKUP_FILE" -C "$SRC_DIR" .`**:
-* `-c`: **C**reate a new archive.
-* `-z`: Compress using **g**zip compression.
-* `-f`: Specify the output **f**ilename (`$BACKUP_FILE`).
-* `-C "$SRC_DIR" .`: Changes directory to `$SRC_DIR` before archiving, ensuring clean relative pathing inside the tarball without absolute directory trees.
-
-
-* **`find "$DEST_DIR" -type f -name "backup_*.tar.gz" -mtime +7 -exec rm -f {} \;`**:
-* `find "$DEST_DIR"`: Scans specified backup directory.
-* `-type f`: Restricts search strictly to files.
-* `-name "backup_*.tar.gz"`: Matches generated backup filename pattern.
-* `-mtime +7`: Filters files modified **more than 7 days ago**.
-* `-exec rm -f {} \;`: Executes removal (`rm -f`) for every matching file found.
-
-
-
----
-
-### Task 5: Cron Job Automation
-
-1. Schedule `backup.sh` to execute automatically every day at **2:00 AM**.
-2. Save log outputs to `/var/log/cron_backup.log`.
-
-**Configuration Procedure:**
-Open the user crontab configuration editor:
-
-```bash
-crontab -e
-
-```
-
-Add the following schedule entry at the end of the file:
 
 ```text
-0 2 * * * /bin/bash /home/user/scripts/backup.sh /var/www/html /var/backups/www >> /var/log/cron_backup.log 2>&1
+$ chmod +x system_info.sh
+$ ./system_info.sh
+=========================================
+       SYSTEM INFORMATION REPORT         
+       Generated: 2026-08-09      
+=========================================
 
-```
+=== 🖥️  Hostname & OS Info ===
+Hostname: primaryvm
+Ubuntu 22.04.3 LTS
 
-**Verify Active Cron Jobs:**
+=== ⏱️  System Uptime ===
+up 3 days, 14 hours, 22 minutes
 
-```bash
-$ crontab -l
-0 2 * * * /bin/bash /home/user/scripts/backup.sh /var/www/html /var/backups/www >> /var/log/cron_backup.log 2>&1
+=== 💾 Top 5 Disk Partitions (By Size) ===
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/sda1        50G   15G   33G  32% /
+/dev/sdb1        20G  5.0G   15G  25% /mnt/data
+tmpfs           3.9G     0  3.9G   0% /dev/shm
+tmpfs           3.9G  1.2M  3.9G   1% /run
+tmpfs           798M     0  798M   0% /run/user/1000
+
+=== 🧠 Memory Usage ===
+               total        used        free      shared  buff/cache   available
+Mem:           7.8Gi       2.1Gi       4.5Gi        50Mi       1.2Gi       5.4Gi
+Swap:          2.0Gi          0B       2.0Gi
+
+=== 🔥 Top 5 CPU-Consuming Processes ===
+    PID USER     %CPU %MEM COMMAND
+   1452 root     12.4  2.1 dockerd
+   3891 user      4.2  5.4 node
+    901 root      1.5  0.8 containerd
+    110 root      0.3  0.1 kworker/0:2
+   4420 user      0.1  0.2 bash
+
+=========================================
+          REPORT COMPLETE                
+=========================================
 
 ```
 
 **Detailed Code Explanation:**
 
-* **Cron Timing Syntax (`0 2 * * *`)**:
-* `0`: Minute 0.
-* `2`: Hour 2 (2:00 AM in 24-hour time).
-* `*`: Every day of the month.
-* `*`: Every month.
-* `*`: Every day of the week.
-
-
-* **Full Paths Requirement**: Cron runs in a minimal background shell environment without standard user `$PATH` definitions. Specifying full paths (`/bin/bash`, `/home/user/scripts/backup.sh`) prevents command-not-found errors.
-* **`>> /var/log/cron_backup.log 2>&1`**: Redirects standard output (`stdout`) and standard error (`stderr`) into a persistent log file for auditing.
-
----
-
-## Key Learnings
-
-1. **Modular Script Architecture:**
-Wrapping logic into functions with scoped variables (`local`) improves script clarity, reduces code duplication, and simplifies debugging.
-2. **System Diagnostic Pipelines:**
-Chaining tools like `df`, `free`, `awk`, `grep`, and `uniq` allows extracting precise real-time system metrics and log analytics.
-3. **Automated Maintenance & Retention:**
-Combining archiving (`tar`), expiration cleanup (`find -mtime`), and Crontab scheduling establishes self-maintaining systems that preserve disk capacity.
-
----
-
-## Hints Reference
-
-* Function syntax: `my_func() { local VAR="$1"; ... }`
-* AWK column printing: `awk '{print $1}'`
-* Tar compression: `tar -czf archive.tar.gz -C /path .`
-* Find expired files: `find /path -type f -mtime +7 -exec rm -f {} \;`
-* Daily 2 AM Cron: `0 2 * * * /path/to/script.sh`
-
----
-
-## Submission Workflow
-
-```bash
-# Prepare directory structure
-mkdir -p Day-18/Documentation Day-18/Scripts
-
-# Move scripts and markdown files into corresponding folders
-mv *.sh Day-18/Scripts/
-mv *.md Day-18/Documentation/
-
-# Ensure executable permissions
-chmod +x Day-18/Scripts/*.sh
-
-# Commit and push to repository
-git add Day-18/
-git commit -m "Add Day 18 Shell Scripting: Functions, System Monitoring & Automated Backups"
-git push origin main
+* **Pipeline sorting (`df -h | sed '1d' | sort -hr -k 2 | head -n 5`)**: We use `sed '1d'` to strip the column headers from `df -h` before sorting so they don't end up at the bottom of the list. `sort -hr -k 2` sorts the output in **h**uman-readable, **r**everse format based on the 2nd column (`Size`).
+* **Process filtering (`ps --sort=-%cpu`)**: The `-` sign before `%cpu` tells the `ps` command to sort in descending order natively, making it extremely efficient to pipe into `head -n 6` (which grabs the header + top 5 processes).
+* **`main()` Wrapping:** Encapsulating all function calls inside a `main()` function is a professional scripting pattern. It ensures the script logic is parsed completely before execution begins, avoiding top-to-bottom execution order bugs.
 
 ```
 
----
+```
