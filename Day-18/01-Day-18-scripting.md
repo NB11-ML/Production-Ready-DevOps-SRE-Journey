@@ -56,6 +56,9 @@ The sum of 100 and 45 is: 145
 
 ```
 
+<img width="963" height="624" alt="image" src="https://github.com/user-attachments/assets/94e80318-f4e7-48e5-9b31-646f56f68067" />
+
+
 **Detailed Code Explanation:**
 
 * **Function Arguments:** In Bash, functions don't declare parameters in parentheses like Python. Instead, you pass arguments directly after the function call (`greet "NB11ML"`), and inside the function, they are accessed as positional parameters (`$1`, `$2`, etc.).
@@ -113,6 +116,9 @@ Swap:          2.0Gi          0B       2.0Gi
 
 ```
 
+<img width="961" height="628" alt="image" src="https://github.com/user-attachments/assets/bfde867c-8f8a-4991-8f71-d097f52a8e48" />
+
+
 **Detailed Code Explanation:**
 
 * **Standard Output as Return:** In standard programming languages, functions `return` strings. In Bash, functions `return` exit codes (0-255). To "return" data (like the output of `df` or `free`), functions simply execute commands or use `echo`, which sends the text to standard output (`stdout`) where the main script displays it.
@@ -148,6 +154,9 @@ echo "Strict mode is active."
 echo "If you see this, no strict mode rules were broken!"
 
 ```
+
+<img width="959" height="637" alt="image" src="https://github.com/user-attachments/assets/b95aede9-acc4-4aca-953b-cbbc40962605" />
+
 
 **Documentation:**
 
