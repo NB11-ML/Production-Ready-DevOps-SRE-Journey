@@ -212,6 +212,9 @@ After function: INTERNAL_VAR =  (Notice this is blank!)
 
 ```
 
+<img width="962" height="667" alt="image" src="https://github.com/user-attachments/assets/6ace42ec-c489-40e7-bb33-f2eef9657fb2" />
+
+
 **Detailed Code Explanation:**
 
 * **Global by Default:** Variables in Bash are completely global by default, even if declared inside a function. Notice how `USER_ROLE` changed from "Admin" to "Guest" globally after the function ran.
@@ -332,6 +335,9 @@ Swap:          2.0Gi          0B       2.0Gi
 =========================================
 
 ```
+
+<img width="960" height="1016" alt="image" src="https://github.com/user-attachments/assets/8382fa77-0971-4215-83bb-dde7a21e7a4f" />
+
 
 **Detailed Code Explanation:**
 
