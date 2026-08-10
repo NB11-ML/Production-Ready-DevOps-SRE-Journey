@@ -75,6 +75,14 @@ $ ./log_rotate.sh /var/log/myapp
 
 ```
 
+Created old fake log:
+```bash
+sudo touch -d "40 days ago" /var/log/temp_syslog_dir/fake_old_backup.gz
+sudo touch -d "8 days ago" /var/log/temp_syslog_dir/fake_old_log.log
+```
+
+<img width="1279" height="811" alt="image" src="https://github.com/user-attachments/assets/c1716756-36d4-4647-a7eb-27ff718a4a47" />
+
 ---
 
 ### Task 2: Server Backup Script (`backup.sh`)
@@ -269,12 +277,13 @@ log_event "END: Daily Maintenance Routine finished."
 
 ```
 
-**Cron Entry for `maintenance.sh` (Daily at 1:00 AM):**
+**Optional: Cron Entry for `maintenance.sh` (Daily at 1:00 AM):**
 
 ```text
 0 1 * * * /bin/bash /home/user/scripts/maintenance.sh
 
 ```
+<img width="1283" height="835" alt="image" src="https://github.com/user-attachments/assets/c8fff293-7dcd-41e8-9936-878558933e90" />
 
 ---
 
