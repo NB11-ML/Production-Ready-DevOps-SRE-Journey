@@ -37,6 +37,9 @@ git merge feature-login
 **Observation:**  
 Git performed a **Fast-Forward** merge (`Fast-forward`). Because `main` had no new commits after `feature-login` was created, Git simply moved the `main` branch pointer forward to match the tip of `feature-login`. No merge commit was created.
 
+<img width="1055" height="506" alt="image" src="https://github.com/user-attachments/assets/0296d077-9d3d-42dc-b771-62a98844f499" />
+
+
 ---
 
 #### Part B: 3-Way Merge Commit (`feature-signup`)
@@ -59,6 +62,9 @@ git merge feature-signup
 
 **Observation:**  
 Because `main` moved ahead while `feature-signup` was being developed, Git performed a **3-Way Merge** (using the common ancestor, `main`, and `feature-signup`) and automatically created a **Merge Commit**: `Merge branch 'feature-signup'`.
+
+<img width="1013" height="484" alt="image" src="https://github.com/user-attachments/assets/e3390217-bb34-4dd0-b078-f47d4d6d3ee3" />
+
 
 ---
 
@@ -100,6 +106,11 @@ git commit -m "chore: add release version file"
 git checkout feature-dashboard
 git rebase main
 ```
+
+<img width="935" height="702" alt="image" src="https://github.com/user-attachments/assets/760101fd-88a8-4eb1-900a-03b215d0b383" />
+
+<img width="659" height="393" alt="image" src="https://github.com/user-attachments/assets/017cadfe-38bc-4e1f-aafb-ae056e466300" />
+
 
 **History Comparison (`git log --oneline --graph --all`):**
 * **Merge History:** Shows a non-linear split-and-join pattern with branching lines and merge commits joining back to `main`.
@@ -143,6 +154,11 @@ git merge --squash feature-profile
 git commit -m "feat: user profile implementation (squashed)"
 ```
 
+<img width="1206" height="662" alt="image" src="https://github.com/user-attachments/assets/2764905a-b4e1-48f0-a695-33efe412483d" />
+
+<img width="1125" height="462" alt="image" src="https://github.com/user-attachments/assets/2a67ecce-f693-4d99-8b13-c82ae00146e2" />
+
+
 **Result:**  
 Only **1 single commit** was added to `main` containing the combined changes of all 4 commits from `feature-profile`.
 
@@ -159,9 +175,13 @@ echo "// theme toggle" >> settings.js && git add settings.js && git commit -m "f
 git checkout main
 git merge feature-settings --no-ff -m "Merge branch 'feature-settings'"
 ```
+<img width="1197" height="379" alt="image" src="https://github.com/user-attachments/assets/10a627ba-f61e-4e94-ba7b-09ff8b44c188" />
 
 **Result:**  
 All individual commits plus the merge commit exist in the `main` history.
+
+
+<img width="1050" height="249" alt="image" src="https://github.com/user-attachments/assets/7f400803-bc95-4712-a402-2a4e36071284" />
 
 ---
 
@@ -237,6 +257,8 @@ git log --oneline
 git checkout main
 git cherry-pick a1b2c3d
 ```
+<img width="1239" height="786" alt="image" src="https://github.com/user-attachments/assets/3508c3ca-3adf-4651-8b2e-0d7ba3e11395" />
+
 
 ---
 
