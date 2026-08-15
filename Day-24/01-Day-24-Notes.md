@@ -276,7 +276,7 @@ git cherry-pick a1b2c3d
 
 ---
 
-## 🛠️ Updated DevOps Git Command Reference (`git-commands.md`)
+## 🛠️ Updated DevOps Git Command Reference: 
 
 ```bash
 # --- Advanced Integration Commands ---
