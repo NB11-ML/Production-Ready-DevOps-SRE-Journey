@@ -30,6 +30,11 @@ git add app.js && git commit -m "feat: Commit C"
 git log --oneline
 
 ```
+---
+
+<img width="940" height="80" alt="Screenshot 2026-08-16 at 15 46 56" src="https://github.com/user-attachments/assets/dd61ee89-7b19-4bc0-9a16-f56f0ffd6707" />
+
+---
 
 #### Part B: Testing Reset Flags (`--soft`, `--mixed`, `--hard`)
 
@@ -53,6 +58,12 @@ cat app.js
 
 ```
 
+---
+
+<img width="1533" height="801" alt="Screenshot 2026-08-16 at 15 52 06" src="https://github.com/user-attachments/assets/e9f16d73-1b7e-4c7f-86d9-9cffcc42cd49" />
+
+
+---
 **Observation:**
 
 * **`--soft`**: Moved the `HEAD` pointer back to Commit B, but the changes from Commit C remained completely intact and **staged** in the index.
@@ -106,7 +117,14 @@ git log --oneline
 cat app.js
 
 ```
+---
 
+<img width="830" height="83" alt="image" src="https://github.com/user-attachments/assets/51185529-a651-4695-8493-6a062ddd8776" />
+<img width="823" height="173" alt="image" src="https://github.com/user-attachments/assets/ed20cf97-522d-469a-ad75-66db378e89e4" />
+<img width="812" height="72" alt="Screenshot 2026-08-16 at 15 56 55" src="https://github.com/user-attachments/assets/16f0e636-ee50-4e9d-9b03-6ef1b73c32dd" />
+
+
+---
 **Observation:**
 
 Git did **not** delete Commit B. Instead, it generated a brand-new commit (e.g., `Revert "feat: Commit B"`) that stacked on top of the history. This new commit applied the exact mathematical opposite of the changes introduced in Commit B.
