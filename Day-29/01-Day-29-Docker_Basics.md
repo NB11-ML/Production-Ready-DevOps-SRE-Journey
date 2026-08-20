@@ -189,6 +189,9 @@ docker run -d --name production-ready-web-port -p 8080:80 nginx
 
 ```
 
+<img width="1094" height="403" alt="image" src="https://github.com/user-attachments/assets/16e5bf99-3095-4fb1-a289-fbf228793df6" />
+
+
 *Access `http://localhost:8080` in your browser. Port 80 inside the container is mapped to port 8080 on the host.*
 
 **4. Check Logs of a Running Container**
