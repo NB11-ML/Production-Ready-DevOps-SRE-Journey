@@ -86,11 +86,6 @@ sudo usermod -aG docker $USER # Run Docker without sudo
 
 ```
 
-<img width="1097" height="113" alt="Screenshot 2026-08-20 at 12 48 20" src="https://github.com/user-attachments/assets/c2bb3b84-53ad-4013-a2ea-60d0833bd049" />
-
-<img width="1094" height="515" alt="image" src="https://github.com/user-attachments/assets/c85e117f-e47f-4b2d-b5d0-856bdf7fa568" />
-
-
 **2. Verify Installation**
 
 ```bash
@@ -98,12 +93,16 @@ docker --version
 
 ```
 
+<img width="1097" height="113" alt="Screenshot 2026-08-20 at 12 48 20" src="https://github.com/user-attachments/assets/c2bb3b84-53ad-4013-a2ea-60d0833bd049" />
+
 **3. Run Hello-World**
 
 ```bash
 docker run hello-world
 
 ```
+
+<img width="1094" height="515" alt="image" src="https://github.com/user-attachments/assets/c85e117f-e47f-4b2d-b5d0-856bdf7fa568" />
 
 *Observation:* Docker checks for the `hello-world` image locally. Not finding it, it pulls the image from Docker Hub, creates a container, runs the executable that prints a welcome message, and exits.
 
@@ -118,6 +117,9 @@ docker run nginx
 
 ```
 
+<img width="1094" height="220" alt="image" src="https://github.com/user-attachments/assets/a5c344a3-1ea6-43dd-8bad-4136f9344908" />
+
+
 *Note: Press `Ctrl+C` to exit. This runs in the foreground, locking the terminal.*
 
 **2. Run an Ubuntu Container Interactively**
@@ -126,6 +128,8 @@ docker run nginx
 docker run -it ubuntu /bin/bash
 
 ```
+
+<img width="1686" height="898" alt="image" src="https://github.com/user-attachments/assets/f07c06ea-8e8e-411c-b77f-7ab2aacf4ed1" />
 
 *Inside the container, run `cat /etc/os-release` to verify you are inside Ubuntu. Type `exit` to leave.*
 
@@ -143,6 +147,9 @@ docker ps -a
 
 ```
 
+<img width="1094" height="576" alt="image" src="https://github.com/user-attachments/assets/d49084a5-c694-4f88-b2c0-b67270ca196a" />
+
+
 **5. Stop and Remove a Container**
 
 ```bash
@@ -150,6 +157,10 @@ docker stop <container_id>
 docker rm <container_id>
 
 ```
+
+<img width="1094" height="302" alt="image" src="https://github.com/user-attachments/assets/5af43555-4fe1-46ab-baa3-3731f0d6f568" />
+
+<img width="1094" height="188" alt="image" src="https://github.com/user-attachments/assets/c162facd-8d3d-4592-a957-5bcb4d8a584b" />
 
 ---
 
@@ -187,17 +198,15 @@ docker logs production-ready-web-port
 
 ```
 
+<img width="1094" height="381" alt="image" src="https://github.com/user-attachments/assets/66a75475-7119-4e2a-a7e4-ac5c3e365b1d" />
+
+
 **5. Run a Command Inside a Running Container**
 
 ```bash
 docker exec -it production-ready-web-port /bin/bash
 
 ```
+<img width="2188" height="522" alt="image" src="https://github.com/user-attachments/assets/41148301-b9cc-477a-9f75-80a2a1740522" />
 
 ---
-
-*Note: Save your screenshots locally and push them alongside this file to your `2026/day-29/` directory.*
-
-```
-
-```
