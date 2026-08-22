@@ -172,25 +172,137 @@ If you go to `http://localhost:8080` in your browser, you should see your Python
 
 ## ⚖️ Task 3: CMD vs ENTRYPOINT
 
-**The Experiment:**
+Understanding the distinction between `CMD` and `ENTRYPOINT` is essential for building flexible, predictable, and production-ready container images.
 
-1. **Using `CMD ["echo", "hello"]`:**
-* Running `docker run my-cmd-image` outputs `hello`.
-* Running `docker run my-cmd-image date` outputs the current date. The `date` command completely overrides `echo hello`.
+---
+
+### Step 1: Testing `CMD` Behavior
+
+`CMD` sets default commands or parameters that can be easily overridden from the command line during container startup.
+
+#### 1. Create `Dockerfile.cmd`
+
+```dockerfile
+FROM alpine:latest
+CMD ["echo", "hello"]
+
+```
+
+#### 2. Build the Image
+
+```bash
+docker build -f Dockerfile.cmd -t my-cmd-image .
+
+```
+
+#### 3. Test Execution & Override
+
+* **Default execution:**
+```bash
+docker run my-cmd-image
+
+```
 
 
-2. **Using `ENTRYPOINT ["echo"]`:**
-* Running `docker run my-entrypoint-image` outputs a blank line (echoes nothing).
-* Running `docker run my-entrypoint-image hello world` outputs `hello world`. The arguments are appended to the ENTRYPOINT command.
+* **Output:** `hello`
+
+
+* **Overriding with a custom command:**
+```bash
+docker run my-cmd-image date
+
+```
+
+
+* **Output:** `Sat Aug 22 14:25:00 UTC 2026`
+* **Analysis:** The `date` command completely replaces the default `echo hello` instruction.
+
+
+<img width="1094" height="584" alt="image" src="https://github.com/user-attachments/assets/1b17b27f-de73-40cb-890e-b499345f4174" />
+
+
+---
+
+### Step 2: Testing `ENTRYPOINT` Behavior
+
+`ENTRYPOINT` configures a container to run as an immutable executable. CLI arguments passed at startup are appended to the executable rather than replacing it.
+
+#### 1. Create `Dockerfile.entrypoint`
+
+```dockerfile
+FROM alpine:latest
+ENTRYPOINT ["echo"]
+
+```
+
+#### 2. Build the Image
+
+```bash
+docker build -f Dockerfile.entrypoint -t my-entrypoint-image .
+
+```
+
+#### 3. Test Execution & Argument Passing
+
+* **Default execution:**
+```bash
+docker run my-entrypoint-image
+
+```
+
+
+* **Output:** *(blank line — `echo` runs without any trailing arguments)*
+
+
+* **Passing arguments at startup:**
+```bash
+docker run my-entrypoint-image hello world
+
+```
+
+
+* **Output:** `hello world`
+* **Analysis:** The arguments `hello world` were appended directly to `echo`, resulting in `echo hello world`.
+
+
+<img width="2188" height="980" alt="image" src="https://github.com/user-attachments/assets/21709d37-fc54-424c-ad7f-d51dea736309" />
+
+
+---
+
+### Step 3: Comparative Breakdown
+
+| Directive | Primary Purpose | CLI Override Behavior | Best Used For |
+| --- | --- | --- | --- |
+| **`CMD`** | Defines default command or arguments. | Fully replaced if flags/commands are provided to `docker run`. | Flexible containers, interactive shells, or replaceable run modes. |
+| **`ENTRYPOINT`** | Converts the container into a fixed binary/executable. | Preserved; CLI inputs are appended as arguments. | Single-purpose CLI tools, microservices, or fixed binaries. |
+
+---
+
+### 💡 SRE Decision Guide: When to Use Which?
+
+* **Use `CMD` when:**
+* You want to provide a sensible default behavior, but allow developers to override it easily (e.g., launching an application vs. starting an interactive debugging shell).
+
+
+* **Use `ENTRYPOINT` when:**
+* The container has one specific purpose (e.g., a Database migration CLI tool or an Nginx web server) and should behave like a standalone binary.
 
 
 
-**SRE Notes: When to use which?**
-
-* **`CMD`:** Use when you want to provide a *default* command or arguments that the user can easily override from the command line (e.g., launching a bash shell or a default web server).
-* **`ENTRYPOINT`:** Use when you want the container to act as a dedicated executable. The user cannot easily override the core command, but they can pass arguments to it.
-* *(Pro-tip: They are often used together! `ENTRYPOINT` defines the executable, and `CMD` provides the default flags/arguments).*
-
+> **🔥 Production Pattern (Combining Both):**
+> Combine `ENTRYPOINT` and `CMD` to define an immutable binary alongside flexible default arguments.
+> ```dockerfile
+> ENTRYPOINT ["python3", "app.py"]
+> CMD ["--port", "8080"]
+> 
+> ```
+> 
+> 
+> * **Running `docker run my-app**` executes `python3 app.py --port 8080`.
+> * **Running `docker run my-app --port 9090**` overrides only the `CMD` portion, executing `python3 app.py --port 9090`.
+> 
+>
 ---
 
 ## 🌐 Task 4: Build a Simple Web App Image
@@ -275,11 +387,5 @@ RUN npm install            # Dependencies reinstall every single time code chang
 COPY package.json .        # Dependencies file rarely changes
 RUN npm install            # Installs and caches dependencies
 COPY . .                   # Source code copied LAST. Only this layer rebuilds when code changes!
-
-```
-
-```
-
-Let me know when you are ready to set up the LinkedIn post for Day 31!
 
 ```
