@@ -151,9 +151,6 @@ if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
 ```
 
-<img width="1856" height="1050" alt="image" src="https://github.com/user-attachments/assets/6f10406b-a391-452e-a7de-cc915075ed78" />
-
-
 ### 3. Build and Run!
 
 Once you have those two files next to your Task 2 `Dockerfile`, you can run:
@@ -168,6 +165,8 @@ docker run -d -p 8080:8080 --name task2-app my-python-app:v1
 ```
 
 If you go to `http://localhost:8080` in your browser, you should see your Python app running! Let me know if the build goes through successfully now.
+
+<img width="1856" height="1050" alt="image" src="https://github.com/user-attachments/assets/6f10406b-a391-452e-a7de-cc915075ed78" />
 
 ---
 
@@ -229,6 +228,10 @@ docker run -d -p 8080:80 --name day31-web my-website:v1
 ```
 
 *Verification: Navigate to `http://localhost:8080` in the browser.*
+
+<img width="613" height="232" alt="image" src="https://github.com/user-attachments/assets/b19de737-d1c0-4f98-b7e2-505aedad2e75" />
+
+
 
 ---
 
