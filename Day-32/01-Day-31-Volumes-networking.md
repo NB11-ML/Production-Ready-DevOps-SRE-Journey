@@ -73,6 +73,10 @@ docker exec -it my-new-db mysql -u root -psecret -e "SHOW DATABASES;"
 
 ```
 
+<img width="1094" height="448" alt="image" src="https://github.com/user-attachments/assets/b2f97a9b-e30a-4141-97bb-e600fe6bb8a2" />
+
+---
+
 * **Result:** The `persist_test` database survives!
 
 ### Task 3: Bind Mounts (Host-Managed)
@@ -88,6 +92,10 @@ echo "<h1>Hello from the Host Machine!</h1>" > index.html
 docker run -d --name nginx-bind -p 8080:80 -v $(pwd):/usr/share/nginx/html nginx:alpine
 
 ```
+
+<img width="1094" height="341" alt="image" src="https://github.com/user-attachments/assets/f7c6e2f4-f5cd-4199-aad6-ad8a2ec80fad" />
+
+<img width="1094" height="323" alt="image" src="https://github.com/user-attachments/assets/dc216dbc-ebc6-444c-aea2-27349c6db0fc" />
 
 * **Result:** If you edit `index.html` on your host machine, the changes reflect instantly in the browser at `http://localhost:8080`.
 
@@ -139,6 +147,8 @@ docker exec -it app_server ping -c 2 web_server
 
 ```
 
+<img width="1312" height="618" alt="image" src="https://github.com/user-attachments/assets/80add6ae-ada4-427b-9195-be40f4b4520f" />
+
 * **SRE Notes:** The default bridge is considered a legacy feature. In production, **always** create custom networks. Custom networks provide automatic DNS resolution, meaning you never have to hardcode volatile IP addresses in your configuration files; you just use the container name.
 
 ---
@@ -174,8 +184,11 @@ ping -c 2 prod-database
 
 ```
 
----
+<img width="1092" height="258" alt="image" src="https://github.com/user-attachments/assets/d694d0f8-28fe-42cc-b474-4d40622d332d" />
 
+<img width="1094" height="254" alt="image" src="https://github.com/user-attachments/assets/1b2839fd-0fee-4ed5-abf9-5fd1ae1aa2dc" />
+
+---
 ## 🗺️ Visual Architecture Summary
 
 ```mermaid
