@@ -1,0 +1,52 @@
+services:
+  web:
+    build: ./app                  # Task 4: Custom Dockerfile build
+    #container_name: sre_webapp
+    ports:
+      - "5000"
+    networks:
+      - frontend                  # Task 5: Explicit networking
+      - backend
+    depends_on:                   # Task 2: Strict dependency & Healthcheck
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_started
+    labels:                       # Task 5: Organizational labels
+      - "environment=production"
+      - "tier=frontend"
+    restart: on-failure           # Task 3: Restart policy
+
+  db:
+    image: postgres:15-alpine
+    container_name: sre_postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: securepass
+      POSTGRES_DB: sre_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:                  # Task 2: Database health validation
+      test: ["CMD-SHELL", "pg_isready -U admin -d sre_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  cache:
+    image: redis:7-alpine
+    container_name: sre_redis
+    networks:
+      - backend
+    restart: always
+
+networks:                         # Task 5: Explicit Network Definitions
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+
+volumes:                          # Task 5: Explicit Volume Definitions
+  db_data:
