@@ -17,5 +17,5 @@ Day-11/team-notes.txt
 #*.log
 
 # Exclude hidden environment variables / secrets
-#.env
-#.env.local
+.env
+.env.local
