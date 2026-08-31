@@ -40,6 +40,7 @@ jobs:
         run: echo "This job is executing on ➔ ${{ runner.os }}"
 
 ```
+## For File refer repo : [git-actionns-repo](https://github.com/NB11-ML/git-actions)
 
 ### Pipeline Execution Proof
 
@@ -70,7 +71,7 @@ To test how CI/CD handles errors, I intentionally injected a failure using a bad
 * **What a failed pipeline looks like:** The GitHub Actions tab displays a red 'X' next to the run. Execution immediately stops at the exact step where the non-zero exit code was generated. All subsequent steps are skipped. If branch protections are enabled, this red 'X' blocks code merging.
 * **How to read the error:** Navigate to the **Actions** tab, click the failed workflow run, and click into the specific job (`greet`). Expand the step marked with the red 'X' to view the raw terminal logs. The standard error (`stderr`) output will show exactly which command failed and why (e.g., "command not found"), allowing for rapid debugging.
 
-After removing error code:
+## After removing error code:
 
 <img width="1885" height="875" alt="image" src="https://github.com/user-attachments/assets/f7fa8042-6c67-42bc-91c3-21af74d7cfcf" />
 
