@@ -89,6 +89,8 @@ jobs:
 
 ```
 
+<img width="960" height="460" alt="Screenshot 2026-09-03 at 13 58 11" src="https://github.com/user-attachments/assets/0353b20b-831d-4938-af08-cd460a7899d9" />
+
 ### Variable Scoping Hierarchy
 
 * **Workflow-level:** Ideal for global configurations (e.g., application identifiers, base container registry URLs).
@@ -128,6 +130,10 @@ jobs:
         run: echo "The upstream build completed at: ${{ needs.generate-data.outputs.build_date }}"
 
 ```
+
+<img width="2398" height="976" alt="image" src="https://github.com/user-attachments/assets/7874feab-7a79-4c3b-be76-f446e77bfbca" />
+<img width="2082" height="962" alt="image" src="https://github.com/user-attachments/assets/66727591-7f43-419f-9b92-881bda5ff376" />
+
 
 ### Why Pass Outputs Between Jobs?
 
@@ -221,6 +227,8 @@ jobs:
         run: echo "Development Pipeline: Execution triggered on feature branch '${{ github.ref_name }}'."
 
 ```
+<img width="2218" height="926" alt="image" src="https://github.com/user-attachments/assets/ba7d59a4-0657-4cc9-abbc-89a194e3b500" />
+
 
 ---
 
