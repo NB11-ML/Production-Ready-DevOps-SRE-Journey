@@ -137,5 +137,208 @@ The execution logs below demonstrate the validation gate rejecting a non-complia
 
 <img width="1452" height="846" alt="image" src="https://github.com/user-attachments/assets/0040f2e6-eb63-4c61-ae2e-71486ec174c5" />
 
+---
+
+## Task 3: Scheduled Workflows (Cron Deep Dive)
+
+**Objective:** Run automated health checks and background tasks on a strict time-based schedule using POSIX cron syntax.
+
+**File Path:** `.github/workflows/scheduled-tasks.yml`
+
+```yaml
+name: Scheduled Health Checks
+
+on:
+  schedule:
+    - cron: '30 2 * * 1'   # Every Monday at 2:30 AM UTC
+    - cron: '0 */6 * * *'  # Every 6 hours
+  workflow_dispatch:       # Allows manual triggering for testing
+
+jobs:
+  health-check:
+    name: Uptime Monitor
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print Trigger Source
+        run: |
+          if [ "${{ github.event_name }}" == "schedule" ]; then
+            echo "⏰ Triggered by cron schedule: ${{ github.event.schedule }}"
+          else
+            echo "👤 Triggered manually via workflow_dispatch"
+          fi
+
+      - name: Execute Health Check (cURL)
+        run: |
+          TARGET_URL="[https://github.com/TrainWithShubham](https://github.com/TrainWithShubham)"
+          HTTP_CODE=$(curl -o /dev/null -s -w "\%{http_code}\n" $TARGET_URL)
+          
+          echo "Target URL: $TARGET_URL"
+          echo "HTTP Response Code: $HTTP_CODE"
+          
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "✅ Health check passed. Site is online."
+          else
+            echo "❌ Health check failed. Site returned $HTTP_CODE."
+            exit 1
+          fi
 
 ```
+
+<img width="1452" height="780" alt="image" src="https://github.com/user-attachments/assets/a199342d-707e-41c4-b17f-e0afd666cc3d" />
+
+
+**Verification Steps:**
+
+1. Navigate to the **Actions** tab in GitHub.
+2. Select **Scheduled Health Checks** from the left sidebar.
+3. Click **Run workflow** -> **Run workflow** to test it instantly via `workflow_dispatch`.
+
+**Cron Notes:**
+
+* **Every weekday at 9 AM IST:** `30 3 * * 1-5` (GitHub uses UTC. 9:00 AM IST is 3:30 AM UTC. `1-5` represents Mon-Fri).
+* **First day of every month at midnight:** `0 0 1 * *` (Minute 0, Hour 0, Day 1, Every Month, Every Day of Week).
+* **Why GitHub delays/skips schedules:** GitHub Actions does not guarantee exact-minute precision; jobs queue based on platform load. Additionally, GitHub automatically disables cron schedules on repositories that have had no push activity for 60 consecutive days to prevent abandoned repos from burning compute resources.
+
+---
+
+## Task 4: Path & Branch Filters
+
+**Objective:** Optimize CI/CD compute minutes by ensuring pipelines only run when relevant code changes.
+
+**File Path 1 (Inclusion):** `.github/workflows/smart-triggers.yml`
+
+```yaml
+name: App & Src Build
+on:
+  push:
+    branches:
+      - main
+      - 'release/*'
+    paths:
+      - 'src/**'
+      - 'app/**'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Triggered because code in src/ or app/ changed on main or a release branch."
+
+```
+
+**File Path 2 (Exclusion):** `.github/workflows/skip-docs.yml`
+
+```yaml
+name: Skip on Docs
+on:
+  push:
+    paths-ignore:
+      - '*.md'
+      - 'docs/**'
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Triggered because the changes were NOT just markdown or docs."
+
+```
+
+**Verification Steps:**
+Modify a `.md` file (like your README) and push the commit. Check the Actions tab; neither workflow will trigger because the changes do not match the required paths.
+
+**Paths vs. Paths-Ignore Notes:**
+
+* **`paths`:** Use for targeted component builds (e.g., only build the backend Docker image when `/backend` files change).
+* **`paths-ignore`:** Use for broad, repository-wide workflows (like standard CI tests) where you want them to run on almost every push, *except* for harmless updates to documentation or `.gitignore` files.
+
+---
+
+## Task 5: Workflow Chaining (`workflow_run`)
+
+**Objective:** Decouple Continuous Integration (testing) from Continuous Deployment (releasing) by triggering a downstream workflow only when the upstream workflow succeeds.
+
+**File Path 1 (Upstream CI):** `.github/workflows/tests.yml`
+
+```yaml
+name: Run Tests
+on:
+  push:
+    branches: [main]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "Running unit tests..."
+          sleep 5
+          echo "✅ Tests passed!"
+
+```
+
+**File Path 2 (Downstream CD):** `.github/workflows/deploy-after-tests.yml`
+
+```yaml
+name: Deploy Application
+on:
+  workflow_run:
+    workflows: ["Run Tests"]
+    types: [completed]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Test Status
+        run: |
+          if [ "${{ github.event.workflow_run.conclusion }}" == "success" ]; then
+            echo "🚀 Upstream tests passed. Deploying to production..."
+          else
+            echo "❌ Upstream tests failed. Halting deployment."
+            exit 1
+          fi
+
+```
+
+**Verification Steps:**
+Push a commit to the `main` branch. Watch the Actions tab: "Run Tests" will execute first. Upon successful completion, "Deploy Application" will automatically trigger.
+
+---
+
+## Task 6: External Event Triggers (`repository_dispatch`)
+
+**Objective:** Allow third-party tools and external APIs to trigger your GitHub Actions pipelines securely.
+
+**File Path:** `.github/workflows/external-trigger.yml`
+
+```yaml
+name: External API Trigger
+on:
+  repository_dispatch:
+    types: [deploy-request]
+
+jobs:
+  deploy-env:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read Payload Data
+        run: |
+          echo "External system requested deployment to environment: ${{ github.event.client_payload.environment }}"
+
+```
+
+**Verification Steps:**
+Using the GitHub CLI (`gh`), authenticate and run the following command in your terminal to simulate an external webhook payload:
+
+```bash
+gh api repos/NB11-ML/Production-Ready-DevOps-SRE-Journey/dispatches \
+  -f event_type=deploy-request \
+  -f client_payload='{"environment":"production"}'
+
+```
+
+**External Trigger Notes:**
+Pipelines are typically triggered by external systems in scenarios such as:
+
+* **ChatOps:** A Slack or Microsoft Teams bot allowing engineers to type `/deploy-prod`, sending a webhook to GitHub.
+* **Observability/Monitoring:** Tools like Datadog or Prometheus detecting high latency and triggering a GitHub Action to automatically run a rollback or remediation playbook.
+* **Pipeline Orchestration:** A primary CI server (like Jenkins or GitLab CI) triggering a specific infrastructure provisioning task hosted in GitHub Actions.
+
