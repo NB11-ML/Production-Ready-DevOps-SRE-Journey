@@ -297,6 +297,10 @@ jobs:
           fi
 
 ```
+<img width="1444" height="810" alt="image" src="https://github.com/user-attachments/assets/d7c0e3ce-e119-44bd-b9a8-7dc48c24e50e" />
+
+<img width="1472" height="716" alt="image" src="https://github.com/user-attachments/assets/12f87e4d-8b94-4558-b5fe-211c9ef43eb3" />
+
 
 **Verification Steps:**
 Push a commit to the `main` branch. Watch the Actions tab: "Run Tests" will execute first. Upon successful completion, "Deploy Application" will automatically trigger.
@@ -329,11 +333,19 @@ jobs:
 Using the GitHub CLI (`gh`), authenticate and run the following command in your terminal to simulate an external webhook payload:
 
 ```bash
-gh api repos/NB11-ML/Production-Ready-DevOps-SRE-Journey/dispatches \
+gh api repos/NB11-ML/git-actions/dispatches \
   -f event_type=deploy-request \
   -f client_payload='{"environment":"production"}'
+```
+OR
+
+```bash
+echo '{"event_type": "deploy-request", "client_payload": {"environment": "production"}}' | gh api repos/NB11-ML/git-actions/dispatches --input -
 
 ```
+
+<img width="1476" height="788" alt="image" src="https://github.com/user-attachments/assets/c0169535-0a86-4439-8f6c-6e0d780d0dea" />
+
 
 **External Trigger Notes:**
 Pipelines are typically triggered by external systems in scenarios such as:
