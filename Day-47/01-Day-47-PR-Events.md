@@ -60,3 +60,85 @@ Below are the runner logs demonstrating the workflow dynamically adapting to the
 <img width="1458" height="1062" alt="image" src="https://github.com/user-attachments/assets/bcc13496-f607-4344-a548-5ae39c66b0af" />
 
 ---
+
+Perfect! The screenshot confirms the validation gate is working exactly as designed, successfully catching the bad branch name (and it looks like it also caught an existing file over 1MB in your repository).
+
+Here is the documentation for Task 2 to append directly to your `day-47-pr-events.md` file:
+
+```markdown
+## Task 2: PR Validation Gate (Automated Quality Checks)
+
+**Objective:**
+Implement a strict set of automated checks that evaluate Pull Requests against repository conventions before allowing them to be merged into the `main` branch.
+
+**Workflow Implementation:**
+**File Path:** `.github/workflows/pr-checks.yml`
+
+```yaml
+name: PR Validation Gate
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  file-size-check:
+    name: File Size Limit (1MB)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Enforce Size Limits
+        run: |
+          LARGE_FILES=$(find . -type f -size +1M -not -path "*/\.git/*")
+          if [ -n "$LARGE_FILES" ]; then
+            echo "❌ Error: The following files exceed the 1MB limit:"
+            echo "$LARGE_FILES"
+            exit 1
+          fi
+          echo "✅ All files are within the 1MB limit."
+
+  branch-name-check:
+    name: Branch Naming Convention
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate Branch Prefix
+        run: |
+          BRANCH="${{ github.head_ref }}"
+          if [[ "$BRANCH" != feature/* && "$BRANCH" != fix/* && "$BRANCH" != docs/* ]]; then
+            echo "Error: Branch '$BRANCH' violates naming conventions."
+            exit 1
+          fi
+          echo "Branch name '$BRANCH' is valid."
+
+  pr-body-check:
+    name: PR Description Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR Body
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          if [ -z "$PR_BODY" ]; then
+            echo "::warning title=Empty PR Description::Please provide a detailed description of your changes."
+          else
+            echo "PR description is present."
+          fi
+
+```
+
+**Architecture & Logic Breakdown:**
+
+* **File Size Gate:** Uses the native Linux `find` command to scan the working directory for files over 1MB. If found, the job explicitly fails (`exit 1`), preventing bloated binaries from being merged.
+* **Naming Convention Gate:** Extracts the source branch name using `${{ github.head_ref }}` and validates it against allowed prefixes (`feature/*`, `fix/*`, `docs/*`) using bash conditional logic.
+* **Description Validation:** Injects the PR description into the environment. If it evaluates as empty, it uses GitHub Actions' `::warning::` syntax to surface a yellow annotation on the PR UI without hard-blocking the merge.
+
+**Execution Proof:**
+The execution logs below demonstrate the validation gate rejecting a non-compliant Pull Request. The `test-bad-branch` triggered a failure on the branch naming convention check, protecting the `main` branch from non-standardized code integration.
+
+<img width="1448" height="1252" alt="image" src="https://github.com/user-attachments/assets/86badaf6-a680-4b6f-94b0-1de78800ec31" />
+
+
+```
