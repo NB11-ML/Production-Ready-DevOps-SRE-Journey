@@ -61,11 +61,6 @@ Below are the runner logs demonstrating the workflow dynamically adapting to the
 
 ---
 
-Perfect! The screenshot confirms the validation gate is working exactly as designed, successfully catching the bad branch name (and it looks like it also caught an existing file over 1MB in your repository).
-
-Here is the documentation for Task 2 to append directly to your `day-47-pr-events.md` file:
-
-```markdown
 ## Task 2: PR Validation Gate (Automated Quality Checks)
 
 **Objective:**
@@ -139,6 +134,8 @@ jobs:
 The execution logs below demonstrate the validation gate rejecting a non-compliant Pull Request. The `test-bad-branch` triggered a failure on the branch naming convention check, protecting the `main` branch from non-standardized code integration.
 
 <img width="1448" height="1252" alt="image" src="https://github.com/user-attachments/assets/86badaf6-a680-4b6f-94b0-1de78800ec31" />
+
+<img width="1452" height="846" alt="image" src="https://github.com/user-attachments/assets/0040f2e6-eb63-4c61-ae2e-71486ec174c5" />
 
 
 ```
