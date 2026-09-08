@@ -124,11 +124,9 @@ jobs:
 ---
 
 ## Task 4: PR Pipeline (Test Only)
-
 Triggered when a Pull Request is opened against `main`. It blocks broken code from being merged without pushing images to Docker Hub.
 
 **File:** `.github/workflows/pr-pipeline.yml`
-
 ```yaml
 name: PR Validation Pipeline
 
@@ -156,16 +154,25 @@ jobs:
 
 ```
 
+**Verification Steps Executed:**
+
+1. Created a feature branch: `git checkout -b test-pr-pipeline`
+2. Pushed a minor code change to trigger the workflow: `git push origin test-pr-pipeline`
+3. Opened a Pull Request against the `main` branch.
+4. Verified in the Actions UI that the PR Validation Pipeline successfully ran the build/test phase while entirely skipping the Docker push process.
+
+<img width="1464" height="708" alt="image" src="https://github.com/user-attachments/assets/a91a9a90-520a-45f5-8246-fe08fcac6847" />
+
 ---
 
 ## Task 5: Main Branch CI/CD Pipeline
+Triggered on a merge to `main`. It calls the reusable workflows sequentially, builds the Docker image, pushes it to Docker Hub, and simulates a deployment requiring manual environment approval.
 
-Triggered on a merge to `main`. It calls the reusable workflows sequentially and deploys the app requiring manual environment approval.
-
-*(Note: Create a `production` environment in Repo Settings -> Environments and enable 'Required Reviewers').*
+**Prerequisites Configured:**
+*   **Secrets:** `DOCKER_USERNAME` and `DOCKER_TOKEN` saved in Repository Settings -> Secrets and variables -> Actions.
+*   **Environments:** `production` environment created with "Required reviewers" enabled to protect the final deployment.
 
 **File:** `.github/workflows/main-pipeline.yml`
-
 ```yaml
 name: Main CI/CD Pipeline
 
@@ -178,7 +185,7 @@ jobs:
   ci-build-test:
     uses: ./.github/workflows/reusable-build-test.yml
     with:
-      node_version: '18'
+      node_version: '22'
       run_tests: true
 
   ci-docker-build:
@@ -199,13 +206,37 @@ jobs:
       - name: Execute Deployment
         run: |
           SHORT_SHA=$(echo${{ github.sha }} | cut -c1-7)
-          echo "🚀 Deploying image: ${{ needs.ci-docker-build.outputs.image_url }} (Commit:$SHORT_SHA) to production..."
+          echo "🚀 Deploying image: ${{ secrets.DOCKER_USERNAME }}/devboard:latest (Commit:$SHORT_SHA) to production..."
           # Insert actual Kubernetes/Server deployment command here
           echo "✅ Deployment Successful!"
 
 ```
 
-*Docker Hub Link:* `https://hub.docker.com/r/<your-username>/devboard`
+
+**Execute and Test the Pipeline**
+
+*   **Configure your Repository:** Go to your GitHub repository in the browser. Add the `DOCKER_USERNAME` and `DOCKER_TOKEN` in **Settings > Secrets and variables > Actions**. Then create the `production` environment in **Settings > Environments** and add yourself as a required reviewer.
+*   **Switch to Main:** Open your terminal and ensure your local `main` branch is up to date with your recently merged PR.
+    ```bash
+    git checkout main
+    git pull origin main
+    ```
+*   **Create the File:** Save the YAML code above into `.github/workflows/main-pipeline.yml`.
+*   **Trigger the Workflow:** Commit and push directly to `main`.
+    ```bash
+    git add .github/workflows/main-pipeline.yml
+    git commit -m "feat: complete Task 5 main branch CI/CD pipeline"
+    git push origin main
+    ```
+
+<img width="2938" height="1294" alt="image" src="https://github.com/user-attachments/assets/6406713f-a515-4e67-b632-acc3eaf97267" />
+<img width="2932" height="1168" alt="image" src="https://github.com/user-attachments/assets/2e0c64a9-a68a-42ed-9c40-41c4a7ee255c" />
+
+
+*   **Approve the Deployment:** Go to the **Actions** tab on GitHub. Watch the `ci-build-test` and `ci-docker-build` jobs complete. When it pauses at `cd-deploy`, click **Review deployments**, add a brief comment, and click **Approve and deploy**.
+
+<img width="2934" height="1108" alt="image" src="https://github.com/user-attachments/assets/9b029787-721e-4550-bc2d-d14d4f4ebf2c" />
+
 
 ---
 
