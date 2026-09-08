@@ -241,17 +241,18 @@ jobs:
 ---
 
 ## Task 6: Scheduled Health Check
+Runs every 12 hours to verify the live container is healthy and generates a Markdown report in the GitHub Actions UI. 
 
-Runs every 12 hours to verify the live container is healthy and generates a Markdown report in the GitHub Actions UI.
+*Note: The port mapping and health check endpoints are configured for `4173` to match the Vite production preview server.*
 
 **File:** `.github/workflows/health-check.yml`
-
 ```yaml
 name: Scheduled Health Check
 
 on:
   schedule:
     - cron: '0 */12 * * *'
+  # Allows manual triggering from the GitHub UI
   workflow_dispatch:
 
 jobs:
@@ -259,16 +260,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Pull Latest Image
-        run: docker pull ${{ secrets.DOCKER_USERNAME }}/devboard:latest
+        run: docker pull YOUR_DOCKER_USERNAME/devboard:latest
 
       - name: Run Container Detached
         run: |
-          docker run -d -p 3000:3000 --name devboard-app ${{ secrets.DOCKER_USERNAME }}/devboard:latest
-          sleep 10 # Wait for node app to initialize
+          docker run -d -p 4173:4173 --name devboard-app YOUR_DOCKER_USERNAME/devboard:latest
+          sleep 10
 
       - name: cURL Health Endpoint
         run: |
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/)
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:4173/)
           if [ "$HTTP_CODE" -eq 200 ] \vert{}\vert{} [ "$HTTP_CODE" -eq 304 ]; then
             echo "STATUS=PASSED" >> $GITHUB_ENV
           else
@@ -280,7 +281,7 @@ jobs:
         if: always()
         run: |
           echo "## 🩺 Health Check Report" >> $GITHUB_STEP_SUMMARY
-          echo "- **Target Image:** ${{ secrets.DOCKER_USERNAME }}/devboard:latest" >> $GITHUB_STEP_SUMMARY
+          echo "- **Target Image:** YOUR_DOCKER_USERNAME/devboard:latest" >> $GITHUB_STEP_SUMMARY
           echo "- **Status:** ${{ env.STATUS }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Timestamp:** $(date)" >> $GITHUB_STEP_SUMMARY
 
@@ -289,6 +290,17 @@ jobs:
         run: docker rm -f devboard-app
 
 ```
+
+<img width="1446" height="1010" alt="image" src="https://github.com/user-attachments/assets/f7c7a30f-81a2-4052-8768-2e3280258773" />
+
+
+**How to Execute Manually:**
+
+1. Navigate to the **Actions** tab in the GitHub repository.
+2. Select **Scheduled Health Check** from the left sidebar menu.
+3. Click the **Run workflow** dropdown on the right side of the screen.
+4. Click the green **Run workflow** button to force an immediate execution.
+5. Click on the completed run to view the generated Markdown health report on the summary page.
 
 ---
 
