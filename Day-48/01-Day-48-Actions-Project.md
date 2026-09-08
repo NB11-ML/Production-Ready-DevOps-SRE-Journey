@@ -2,7 +2,9 @@
 
 ## Pipeline Architecture
 **1. PR Workflow:** `PR Opened` ➔ `Build & Test (Reusable)` ➔ `PR Checks Pass Summary`
+
 **2. Main Workflow:** `Merge to Main` ➔ `Build & Test` ➔ `Docker Build, Trivy Scan & Push` ➔ `Deploy (Production Env)`
+
 **3. Health Check:** `Every 12 Hours (Cron)` ➔ `Pull Image` ➔ `Run Container` ➔ `cURL Endpoint` ➔ `Generate Markdown Report`
 
 ---
