@@ -169,12 +169,18 @@ kubectl get pods -n kube-system
 
 ### Task 6: Practice Cluster Lifecycle
 
-**What is a kubeconfig?**
-A `kubeconfig` is a configuration file that stores information about clusters, users, namespaces, and authentication mechanisms. It tells the `kubectl` CLI tool exactly where your cluster is and how to securely connect to it.
+To build muscle memory, I executed a full teardown and recreation of the cluster:
 
-**Where is it stored?**
-On most systems, the default location is in the user's home directory at `~/.kube/config`.
-
+```Bash
+kind delete cluster --name devops-cluster
+kind create cluster --name devops-cluster
 ```
 
-```
+<img width="2940" height="1354" alt="image" src="https://github.com/user-attachments/assets/6125be46-b3c2-428d-97bf-a9b0e21123e1" />
+
+
+**Understanding kubeconfig**
+
+* **What it is:** A `kubeconfig` is a YAML configuration file that acts as the connection map for the `kubectl` CLI tool. It stores essential information such as cluster addresses, user credentials, context definitions, namespaces, and authentication mechanisms, telling `kubectl` exactly where your cluster is and how to securely communicate with the API Server.
+* **Where it is stored:** By default, it is securely stored on your local machine in your home directory at `~/.kube/config`.
+* **How to view it:** You can inspect your current cluster connections and authentication mappings by running `kubectl config view`.
