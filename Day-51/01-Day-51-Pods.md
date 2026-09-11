@@ -1,4 +1,4 @@
-# Day 51: Kubernetes Manifests and Your First Pods
+# ☸️ 🚀 Day 51: Kubernetes Manifests and Your First Pods
 
 ### The Anatomy of a Kubernetes Manifest
 Every Kubernetes resource requires a YAML manifest containing these four critical top-level fields to define its state:
