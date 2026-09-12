@@ -239,6 +239,17 @@ kubectl describe deployment nginx-deployment -n dev | grep Image
 <img width="2908" height="892" alt="image" src="https://github.com/user-attachments/assets/8d612dac-58e8-44c2-839e-7b1437f7eaed" />
 <img width="2394" height="1036" alt="image" src="https://github.com/user-attachments/assets/939c38a3-6acd-4277-ab28-4f6d08b9923d" />
 
+**Troubleshooting a Stuck Rollout:**
+
+If your rollout hangs (e.g., `Waiting for deployment... 2 out of 4 new replicas have been updated`), a new pod is likely failing to pull its image or start correctly. Press `Ctrl+C` to exit the watch command and execute your SRE debugging runbook:
+
+```bash
+# 1. Identify the failing pod (look for statuses like ErrImagePull or CrashLoopBackOff)
+kubectl get pods -n dev
+
+# 2. Inspect the pod's event log to find the exact root cause
+kubectl describe pod <stuck-pod-name> -n dev
+```
 ---
 
 ### Task 7: Clean Up
