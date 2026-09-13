@@ -34,10 +34,7 @@ kubectl apply -f nginx-deployment.yaml
 kubectl get pods -n dev -o wide
 
 ```
-
-
-
-
+<img width="1462" height="523" alt="Pre-requisite" src="https://github.com/user-attachments/assets/3b664111-83a7-40f2-a5a8-04e29be78972" />
 
 ---
 
@@ -72,30 +69,40 @@ kubectl get svc -n dev
 
 ```
 
+<img width="2294" height="1520" alt="image" src="https://github.com/user-attachments/assets/da10655e-e4a0-4862-b880-22984a0cd4fd" />
+
 ---
 
 ### Task 2: Verify the ClusterIP Service
+Because a ClusterIP is purely internal, we cannot access it from our laptop browser. We must launch a temporary "test" Pod inside the cluster to ping it.
 
-Because a ClusterIP is internal, we cannot access it from our laptop browser. We must launch a temporary "test" Pod inside the cluster to ping it.
-
-**1. Launch a temporary interactive Pod:**
-
+**1. Launch a stable background test Pod:**
+To avoid terminal race conditions, we start the pod in the background and tell it to stay awake for an hour:
 ```bash
-kubectl run test-pod --image=busybox:1.28 --restart=Never -n dev -it --rm -- sh
+kubectl run test-pod --image=busybox:latest --restart=Never -n dev -- sleep 3600
 
 ```
 
-**2. Test connectivity using the Service DNS:**
-Inside the busybox terminal, hit the Service using its DNS name (`<service-name>.<namespace>.svc.cluster.local`):
+**2. Exec into the running Pod:**
+Wait a few seconds for the pod's status to reach `Running`, then open an interactive shell inside it:
 
 ```bash
-wget -qO- app-clusterip.dev.svc.cluster.local:80
+kubectl exec -it test-pod -n dev -- sh
 
 ```
 
-*Verification:* You should see the raw HTML output of your application. Type `exit` to destroy the test pod.
+**3. Test connectivity to the Service:**
+Inside the busybox terminal, retrieve the Nginx homepage using the Service's short name:
 
+```bash
+wget -qO- http://app-clusterip
+OR
+nslookup app-clusterip
+```
 ---
+<img width="1468" height="1046" alt="image" src="https://github.com/user-attachments/assets/79df4e0f-6a00-49eb-ae86-343f72627d96" />
+
+<img width="1448" height="770" alt="image" src="https://github.com/user-attachments/assets/a7ce4775-3cc5-4d64-9d3e-246597b81cf2" />
 
 ### Task 3: Discover Services with DNS
 
