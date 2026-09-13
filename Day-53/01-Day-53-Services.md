@@ -96,27 +96,19 @@ Inside the busybox terminal, retrieve the Nginx homepage using the Service's sho
 
 ```bash
 wget -qO- http://app-clusterip
-OR
-nslookup app-clusterip
+
 ```
----
 <img width="1468" height="1046" alt="image" src="https://github.com/user-attachments/assets/79df4e0f-6a00-49eb-ae86-343f72627d96" />
 
-<img width="1448" height="770" alt="image" src="https://github.com/user-attachments/assets/a7ce4775-3cc5-4d64-9d3e-246597b81cf2" />
 
+---
 ### Task 3: Discover Services with DNS
 
 Kubernetes has a built-in DNS server (CoreDNS). Every Service gets a DNS entry automatically in this format:
 `<service-name>.<namespace>.svc.cluster.local`
 
 **Test the DNS resolution:**
-Launch a temporary interactive Pod to test the network from inside the cluster:
-```bash
-kubectl run dns-test --image=busybox:latest --rm -it --restart=Never -n dev -- sh
-
-```
-
-**Inside the Pod shell, execute these tests:**
+Using the exact same `test-pod` shell we opened in Task 2, execute these DNS tests:
 
 ```bash
 # 1. Short name (Works when communicating within the SAME namespace)
@@ -126,16 +118,24 @@ wget -qO- http://app-clusterip
 wget -qO- [http://app-clusterip.dev.svc.cluster.local](http://app-clusterip.dev.svc.cluster.local)
 
 # 3. Look up the exact DNS entry to see the ClusterIP mapping
-nslookup app-clusterip
-
-# Exit to destroy the test pod automatically
-exit
+# Note: Using the full DNS name prevents noisy NXDOMAIN resolver logs
+nslookup app-clusterip.dev.svc.cluster.local
 
 ```
+
+<img width="1448" height="770" alt="image" src="https://github.com/user-attachments/assets/a7ce4775-3cc5-4d64-9d3e-246597b81cf2" />
+<img width="1456" height="914" alt="image" src="https://github.com/user-attachments/assets/f438316f-27c5-4283-9263-d179c0e6034c" />
 
 **SRE Context:**
 Both the short name and the full DNS name resolve to the exact same ClusterIP. In production, your applications should use the **short name** when communicating with microservices inside their own namespace, and the **full name** when querying a service hosted in a different namespace (e.g., a frontend in `dev` reaching a database in `backend`).
 
+**Clean Up the Test Pod:**
+Once you are done with your tests, type `exit` to leave the container shell, and then delete the pod:
+
+```bash
+kubectl delete pod test-pod -n dev
+
+```
 
 ---
 
