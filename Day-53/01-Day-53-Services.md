@@ -169,6 +169,8 @@ kubectl apply -f loadbalancer-service.yaml
 kubectl get svc app-loadbalancer -n dev
 
 ```
+<img width="2390" height="1402" alt="image" src="https://github.com/user-attachments/assets/4564d0f1-cbb8-4d6d-8c9b-0028849f4d83" />
+
 
 *Verification:* Look at the `EXTERNAL-IP` column. If you are running this locally on Docker/Minikube/Kind, it will permanently say `<pending>` because you don't have AWS attached. If you run this on AWS EKS, it will output a public DNS URL!
 
@@ -186,6 +188,8 @@ kubectl get endpoints app-clusterip -n dev
 kubectl describe svc app-clusterip -n dev
 
 ```
+
+<img width="1462" height="826" alt="image" src="https://github.com/user-attachments/assets/a80e9b83-7072-4229-8b1a-0d484c0776c9" />
 
 ---
 
