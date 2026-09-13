@@ -139,7 +139,48 @@ kubectl delete pod test-pod -n dev
 
 ---
 
-### Task 4: Create a LoadBalancer Service (Cloud Access)
+### Task 4: Create a NodePort Service (External Access)
+A `NodePort` Service exposes the application to the outside world by opening a static port (between 30000-32767) on every physical Worker Node's IP.
+
+**1. Create the `nodeport-service.yaml` manifest:**
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-nodeport
+  namespace: dev
+spec:
+  type: NodePort
+  selector:
+    app: nginx
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+    nodePort: 30007   # External port on the Host machine
+
+```
+
+**2. Apply and Verify:**
+
+```bash
+kubectl apply -f nodeport-service.yaml
+kubectl get svc -n dev
+
+```
+
+*Note for local `kind` clusters: To test this in your browser securely, use port-forwarding: `kubectl port-forward svc/app-nodeport 8080:80 -n dev` and open `localhost:8080`.*
+
+####  Port-Forwarding
+
+<img width="2482" height="1458" alt="image" src="https://github.com/user-attachments/assets/674236dd-2511-474a-85a7-a8af9ac560d6" />
+
+#### Host: localhost:8080
+<img width="2876" height="586" alt="image" src="https://github.com/user-attachments/assets/9367dc27-ea66-405e-910f-b261c3cdd8c7" />
+
+
+---
+### Task 5: Create a LoadBalancer Service (Cloud Access)
 
 This is the enterprise standard. When deployed on cloud platforms (AWS, GCP, Azure), this Service type commands the cloud provider to provision a physical Load Balancer (like an AWS NLB/ALB) and route external internet traffic directly into your cluster.
 
@@ -176,7 +217,7 @@ kubectl get svc app-loadbalancer -n dev
 
 ---
 
-### Task 5: Explore Service Endpoints
+### Task 6: Explore Service Endpoints
 
 How does the Service know the exact IPs of your dynamic Pods? It utilizes an `Endpoints` tracking list.
 
@@ -193,7 +234,7 @@ kubectl describe svc app-clusterip -n dev
 
 ---
 
-### Task 6: Clean Up
+### Task 7: Clean Up
 
 Maintain good cluster hygiene by tearing down the resources at the end of the day.
 
