@@ -74,3 +74,20 @@ spec:
 
 * **Data disappeared after Pod restart?**
 * *Cause:* You used an `emptyDir: {}` volume instead of a PVC. `emptyDir` is ephemeral and strictly tied to the Pod's lifecycle.
+
+## 🕵️‍♂️ Advanced SRE Troubleshooting 
+
+*   **Pod stuck in `ContainerCreating` with a `Multi-Attach Error`?**
+    *   *Cause:* You are using a `ReadWriteOnce` (RWO) volume, and Kubernetes is trying to spin up a new Pod on **Node B** before the old Pod on **Node A** has completely terminated. The cloud provider refuses to attach the hard drive to two different nodes at the same time.
+    *   *Resolution:* Delete the stuck Pod, forcefully terminate the old Pod if it is hanging (`kubectl delete pod <name> --force`), and ensure your Deployments use `strategy: Recreate` instead of `RollingUpdate` for RWO stateful applications.
+
+*   **Cannot reuse a `Released` manual PV? (The Retain Trap)**
+    *   *Cause:* When a PVC is deleted and the PV has a `Retain` policy, the PV status changes to `Released`. However, it still holds a hidden reference to the old claim ticket (`claimRef`). Kubernetes will **not** allow a brand new PVC to bind to it, even if the names match perfectly.
+    *   *Resolution:* You must edit the PV and manually delete the `claimRef` block. 
+        1. Run `kubectl edit pv <pv-name>`
+        2. Delete the entire `claimRef:` section (usually at the bottom of the `spec`).
+        3. Save and exit. The PV will instantly change back to `Available` and can be claimed again!
+
+*   **Pod fails to start due to `node affinity conflict`?**
+    *   *Cause:* In cloud environments (AWS/GCP), physical hard drives exist in specific Availability Zones (e.g., `us-east-1a`). If you use immediate dynamic provisioning, the drive might be created in Zone A, but your Pod gets scheduled on a Worker Node in Zone B. 
+    *   *Resolution:* This is exactly why the `VolumeBindingMode: WaitForFirstConsumer` rule exists on your StorageClass. Always ensure this is enabled so the disk is created in the exact same zone where the Pod lands.
