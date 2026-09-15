@@ -94,15 +94,30 @@ kubectl exec ephemeral-pod -- cat /data/message.txt
 
 ```
 
+<img width="2490" height="1530" alt="image" src="https://github.com/user-attachments/assets/882596be-fb93-4b77-96af-257e90437b8b" />
+
 * **Verification:** You will get a `No such file or directory` error. The data is permanently gone!
 
 ---
 
 ### Task 2: Create a PersistentVolume (Static Provisioning)
 
-Let's create a manual storage block on the Node's hard drive.
+#### 🧠 Theory Deep-Dive: Understanding the PV Manifest
+When we write a manual PV (Static Provisioning), we are acting as the Cluster Administrator physically carving out storage for the cluster. Here is exactly what our manifest defines:
 
-**1. Create `manual-pv.yaml**`
+*   **Capacity (`1Gi`):** We are allocating exactly 1 Gigabyte of storage space. If a developer requests 2Gi later, this volume will reject the claim.
+*   **Access Modes (How Nodes connect to the storage):**
+    *   `ReadWriteOnce (RWO):` The volume can be mounted as read-write by only a **single** Kubernetes Node at a time. This is the absolute standard for databases to prevent data corruption.
+    *   `ReadOnlyMany (ROX):` The volume can be mounted as read-only by **many** Nodes simultaneously. (Perfect for sharing static assets or large config files across many web servers).
+    *   `ReadWriteMany (RWX):` The volume can be mounted as read-write by **many** Nodes simultaneously. (Extremely hard to configure, requires advanced network storage like NFS or AWS EFS).
+*   **Reclaim Policy (`Retain`):** This is a critical SRE safety net. If a developer accidentally deletes their PVC (Claim), the `Retain` policy ensures the underlying PV and its data are *not* deleted. It protects against catastrophic accidental data loss.
+*   **Storage Type (`hostPath`):** This tells Kubernetes to map a specific directory (`/tmp/k8s-pv-data`) on the actual Worker Node's physical hard drive. 
+    *   *🚨 SRE Warning:* `hostPath` is great for local testing in `kind`, but it is an **anti-pattern in production**. If your Pod crashes and Kubernetes reschedules it to a *different* Worker Node, it will lose access to the data stored on the original Node's hard drive! In production, we use cloud storage (like AWS EBS or Google Persistent Disks) that can detach and reattach to any Node in the cluster.
+
+
+#### Let's create a manual storage block on the Node's hard drive.
+
+**1. Create `manual-pv.yaml`**
 
 ```yaml
 apiVersion: v1
@@ -128,6 +143,7 @@ kubectl apply -f manual-pv.yaml
 kubectl get pv
 
 ```
+<img width="2356" height="1186" alt="image" src="https://github.com/user-attachments/assets/f0f0a70e-7740-49ed-bd93-a2f6a24eddea" />
 
 * **Verification:** The `STATUS` of the PV should clearly say `Available`.
 
@@ -137,7 +153,7 @@ kubectl get pv
 
 Now, we claim 500Mi of the 1Gi we just created.
 
-**1. Create `manual-pvc.yaml**`
+**1. Create `manual-pvc.yaml`**
 
 ```yaml
 apiVersion: v1
@@ -145,6 +161,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: manual-pvc
 spec:
+  storageClassName: ""
   accessModes:
     - ReadWriteOnce
   resources:
@@ -161,6 +178,9 @@ kubectl get pvc
 kubectl get pv
 
 ```
+
+<img width="2572" height="1206" alt="image" src="https://github.com/user-attachments/assets/debdd9fa-f77b-468e-8949-e793f7504ce2" />
+
 
 * **Verification:** The `STATUS` of both the PVC and PV should instantly change to `Bound`. The `VOLUME` column in the `get pvc` output will show `manual-pv`.
 
