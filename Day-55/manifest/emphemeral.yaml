@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: emphemeral-pod
+
+spec:
+  containers:
+  - name: busybox
+    image: busybox:latest
+    command: ["/bin/sh", "-c", "sleep 3600"]
+    volumeMounts:
+    - name: data-vol
+      mountPath: /data
+  volumes:
+  - name: data-vol
+    emptyDir: {}
