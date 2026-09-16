@@ -47,8 +47,9 @@ kubectl delete pod <pod-name>
 kubectl get pods
 
 ```
-
 The replacement Pod has a completely different random name!
+
+<img width="2396" height="820" alt="image" src="https://github.com/user-attachments/assets/c791df45-b299-4513-bfd7-f132f31312c9" />
 
 > **✅ Verify:** *Why would random pod names be a problem for a database cluster?*
 > **Answer:** Database clusters rely on strict replication topologies (e.g., Primary and Secondary nodes). If a Secondary node needs to sync data from the Primary node, it needs to know the Primary's exact network address. If Pod names and IPs change randomly every time a Pod crashes, the cluster cannot maintain its replication topology and will break.
@@ -59,6 +60,8 @@ The replacement Pod has a completely different random name!
 kubectl delete deployment nginx-deploy
 
 ```
+<img width="2392" height="358" alt="image" src="https://github.com/user-attachments/assets/112cef81-9c07-49bf-9d8a-57855b86a322" />
+
 
 ---
 
@@ -93,7 +96,11 @@ kubectl get svc nginx-headless
 
 ```
 
+<img width="2228" height="1346" alt="image" src="https://github.com/user-attachments/assets/24059117-f49e-47ba-bd9c-2810dfb75c6b" />
+
+
 > **✅ Verify:** *What does the CLUSTER-IP column show?*
+
 > **Answer:** It shows `None`.
 
 ---
@@ -155,14 +162,14 @@ kubectl get pvc
 
 ```
 
+https://github.com/user-attachments/assets/b1481edc-3df5-427e-8da2-496448e57a21
+
 > **✅ Verify:** *What are the exact pod names and PVC names?*
 > **Answer:**
 > * **Pod Names:** `web-0`, `web-1`, `web-2` (Created strictly in that order).
 > * **PVC Names:** `web-data-web-0`, `web-data-web-1`, `web-data-web-2` (Format is `<template-name>-<pod-name>`).
-> 
-> 
 
-*📸 [Insert Screenshot of `kubectl get pods` and `kubectl get pvc` here]*
+<img width="2814" height="1660" alt="image" src="https://github.com/user-attachments/assets/3858d21b-3d5e-4a0f-adea-cad7f47ff6ab" />
 
 ---
 
