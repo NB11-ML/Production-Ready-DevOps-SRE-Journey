@@ -58,6 +58,8 @@ kubectl describe pod qos-demo | grep -i qos
 
 ```
 
+<img width="2568" height="1220" alt="image" src="https://github.com/user-attachments/assets/9001f663-97e2-449b-807a-6a4fc7f8ab57" />
+
 > **✅ Verify:** *What QoS class does your Pod have?*
 > **Answer:** **Burstable.** Because the Requests (100m/128Mi) are lower than the Limits (250m/256Mi), Kubernetes guarantees the minimum but allows it to "burst" up to the limit if the node has spare capacity.
 
@@ -97,6 +99,9 @@ kubectl describe pod oom-demo
 
 ```
 
+<img width="1470" height="864" alt="Screenshot 2026-09-17 at 05 14 01" src="https://github.com/user-attachments/assets/bc9f4cd9-ea69-4c16-93a7-32e64dd32fda" />
+
+
 > **✅ Verify:** *What exit code does an OOMKilled container have?*
 > **Answer:** **Exit Code 137.** (This is calculated as Linux base code 128 + signal 9 `SIGKILL`). The kernel ruthlessly killed the process for attempting to use 200Mi when its limit was strictly 100Mi.
 
@@ -132,6 +137,9 @@ kubectl get pods
 kubectl describe pod greedy-pod
 
 ```
+
+<img width="1403" height="493" alt="Screenshot 2026-09-17 at 05 24 36" src="https://github.com/user-attachments/assets/05fdb817-4285-4f0e-8bcd-4f65ee3dcdb4" />
+
 
 > **✅ Verify:** *What event message does the scheduler produce?*
 > **Answer:** `Warning  FailedScheduling  default-scheduler  0/1 nodes are available: 1 Insufficient cpu, 1 Insufficient memory.` The Pod remains strictly in a `Pending` state because the Scheduler cannot find a Node big enough to satisfy the guaranteed request.
