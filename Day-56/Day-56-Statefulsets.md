@@ -240,6 +240,8 @@ kubectl exec web-0 -- cat /usr/share/nginx/html/index.html
 > **✅ Verify:** *Is the data identical after pod recreation?*
 > **Answer:** Yes! The output is exactly `"Data from web-0"`. When the StatefulSet recreated `web-0`, it automatically re-attached it to `web-data-web-0`, proving our state survived a container crash.
 
+<img width="2936" height="542" alt="image" src="https://github.com/user-attachments/assets/7ff69741-57ba-466d-9b00-637d2aaae818" />
+
 ---
 
 ### Task 6: Ordered Scaling
@@ -272,6 +274,8 @@ kubectl get pods -w
 kubectl get pvc
 
 ```
+<img width="2932" height="628" alt="image" src="https://github.com/user-attachments/assets/b50f5e4a-25bb-45a4-a374-7386842e6b45" />
+
 
 > **✅ Verify:** *After scaling down, how many PVCs exist?*
 > **Answer:** **Five PVCs still exist.** Kubernetes intentionally leaves the PVCs for `web-3` and `web-4` intact. If you ever scale back up to 5, those Pods will seamlessly pick up exactly where they left off without data loss.
@@ -306,3 +310,8 @@ kubectl get pvc
 kubectl delete pvc web-data-web-0 web-data-web-1 web-data-web-2 web-data-web-3 web-data-web-4
 
 ```
+
+<img width="2926" height="1012" alt="image" src="https://github.com/user-attachments/assets/6698e8b2-6883-4717-8dd2-325492fdcbd6" />
+
+---
+
