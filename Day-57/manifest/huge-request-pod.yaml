@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: greedy-pod
+
+spec:
+  containers:
+  - name: greedy-ctr
+    image: nginx
+    resources:
+      requests:
+        cpu: "100"          # 100 entire CPU cores!
+        memory: "128Gi"     # 128 Gigabytes of RAM!
