@@ -194,7 +194,6 @@ nslookup web-2.nginx-headless.default.svc.cluster.local
 exit
 
 ```
-
 **3. Compare with actual Pod IPs:**
 
 ```bash
@@ -205,7 +204,7 @@ kubectl get pods -o wide
 > **✅ Verify:** *Does the nslookup IP match the pod IP?*
 > **Answer:** Yes! The Headless Service successfully routed the exact internal DNS query to the specific, individual Pod IP.
 
-*📸 [Insert Screenshot of nslookup output matching Pod IPs here]*
+<img width="1928" height="1250" alt="image" src="https://github.com/user-attachments/assets/4701f163-1a9b-4958-9e13-e0646b49460b" />
 
 ---
 
