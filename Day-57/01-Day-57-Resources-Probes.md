@@ -185,6 +185,9 @@ kubectl get pod liveness-exec -w
 
 ```
 
+<img width="2480" height="1302" alt="image" src="https://github.com/user-attachments/assets/380d395d-913d-4064-886b-d9e492cf0bf2" />
+
+
 > **✅ Verify:** *How many times has the container restarted?*
 > **Answer:** After about 45 seconds (30s sleep + 15s of 3 failed checks), the `RESTARTS` column will tick up to `1`, and keep looping.
 
@@ -237,8 +240,14 @@ kubectl get endpoints readiness-svc
 
 ```
 
+<img width="2334" height="1556" alt="image" src="https://github.com/user-attachments/assets/1250986e-935c-4652-ba6f-6ed0d39fd4c9" />
+
+
 > **✅ Verify:** *When readiness failed, was the container restarted?*
-> **Answer:** **No.** The `READY` column simply dropped to `0/1`, and the IP address disappeared from `kubectl get endpoints`. This is an SRE failsafe: if a Pod is overwhelmed or syncing a database, we stop sending it user traffic, but we *don't* kill it!
+
+> **Answer:** **No.** The `READY` column simply dropped to `0/1`, and the IP address disappeared from `kubectl get endpoints`.
+
+> This is an SRE failsafe: if a Pod is overwhelmed or syncing a database, we stop sending it user traffic, but we *don't* kill it!
 
 ---
 
@@ -280,7 +289,11 @@ kubectl apply -f startup-pod.yaml
 
 ```
 
+<img width="781" height="788" alt="Screenshot 2026-09-17 at 06 57 55" src="https://github.com/user-attachments/assets/0bf15ed5-2f70-41d7-afde-d42d9508d649" />
+
+
 > **✅ Verify:** *What would happen if failureThreshold were 2 instead of 12?*
+
 > **Answer:** The Startup probe would fail after 10 seconds (5s period * 2 thresholds). Because our application takes 20 seconds to boot (`sleep 20`), the container would be killed and restarted before it ever had a chance to finish initializing. It would be stuck in an infinite `CrashLoopBackOff`.
 
 ---
