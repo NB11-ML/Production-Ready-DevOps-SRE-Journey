@@ -41,12 +41,22 @@ kubectl get pods -n kube-system | grep metrics-server
 * **For Minikube:** `minikube addons enable metrics-server`
 * **For Kubeadm / Local VM Clusters:**
 ```bash
-kubectl apply -f [https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml](https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml)
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 
 ```
 
+# NOTE: Patch the deployment to bypass local VM self-signed certificate blocks
 
-*(Note: If you are running a local testing VM and the metrics server pod fails to start due to certificate errors, you must edit the deployment `kubectl edit deploy metrics-server -n kube-system` and add the `--kubelet-insecure-tls` flag to the container args).*
+* *If you are running a local testing VM and the metrics server pod fails to start due to certificate*
+   
+* errors, you must edit the deployment `kubectl edit deploy metrics-server -n kube-system`
+* add the `--kubelet-insecure-tls` flag to the container args).
+
+OR
+
+```bash
+kubectl patch deployment metrics-server -n kube-system --type='json' -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--kubelet-insecure-tls"}]'
+```
 
 **3. Wait 60 seconds, then test:**
 
@@ -54,6 +64,9 @@ kubectl apply -f [https://github.com/kubernetes-sigs/metrics-server/releases/lat
 kubectl top nodes
 
 ```
+
+<img width="2882" height="1082" alt="image" src="https://github.com/user-attachments/assets/1b96ecfe-bec5-4b85-9440-9cb28d7d8cb9" />
+
 
 > **✅ Verify:** *What is the current CPU and memory usage of your node?*
 > **Answer:** *(Check your terminal output! It will look something like this: `primaryvm   150m   7%   1200Mi   30%`)*
@@ -74,6 +87,9 @@ kubectl top pods -A --sort-by=cpu
 ```
 
 *Note: `kubectl describe pod` shows what is configured (Requests/Limits). `kubectl top` shows what is ACTUALLY happening right now.*
+
+<img width="2882" height="1374" alt="image" src="https://github.com/user-attachments/assets/08d41a33-97ae-4b09-ade8-f26cf35822a5" />
+
 
 > **✅ Verify:** *Which pod is using the most CPU right now?*
 > **Answer:** *(Look at the top of your sorted output list. It is usually `kube-apiserver` or `etcd` in the `kube-system` namespace when the cluster is idle).*
@@ -130,6 +146,9 @@ kubectl top pod -l run=php-apache
 
 ```
 
+<img width="2926" height="1806" alt="image" src="https://github.com/user-attachments/assets/90c44c39-86c7-49ac-8980-f6e4cbc78c07" />
+
+
 > **✅ Verify:** *What is the current CPU usage of the Pod?*
 > **Answer:** *(It should be very close to `0m` or `1m` because it is completely idle with no traffic).*
 
@@ -152,6 +171,8 @@ kubectl autoscale deployment php-apache --cpu-percent=50 --min=1 --max=10
 kubectl get hpa
 
 ```
+
+<img width="3006" height="672" alt="image" src="https://github.com/user-attachments/assets/ca402474-0546-4e79-857b-ebd24755958c" />
 
 > **✅ Verify:** *What does the TARGETS column show?*
 > **Answer:** Immediately after creation, it will show `<unknown>/50%`. It takes about 15-30 seconds for the Metrics Server to collect the first data points. After a few seconds, it will update to `1%/50%` or similar.
@@ -182,7 +203,8 @@ Over the next 1-3 minutes, you will see the CPU utilization spike (e.g., `250%/5
 > **✅ Verify:** *How many replicas did HPA scale to under load?*
 > **Answer:** *(Your exact number may vary based on VM capacity, but it typically scales up to between 5 and 7 replicas to handle this specific busybox loop).*
 
-*📸 [Insert Screenshot of `kubectl get hpa -w` showing the scale up]*
+<img width="3412" height="922" alt="image" src="https://github.com/user-attachments/assets/2edc98fc-f044-48b3-958c-5c2d10ee29db" />
+
 
 **4. Stop the attack:**
 
@@ -190,6 +212,9 @@ Over the next 1-3 minutes, you will see the CPU utilization spike (e.g., `250%/5
 kubectl delete pod load-generator
 
 ```
+
+<img width="3400" height="1172" alt="image" src="https://github.com/user-attachments/assets/1d90ccbd-5522-47b8-950b-cfd96db07793" />
+
 
 *(Note: HPA scales UP rapidly to save crashing apps, but it scales DOWN very slowly—a 5-minute stabilization window—to prevent "thrashing" if traffic spikes again).*
 
@@ -250,6 +275,9 @@ kubectl apply -f hpa-v2.yaml
 kubectl describe hpa php-apache
 
 ```
+
+<img width="2820" height="1096" alt="image" src="https://github.com/user-attachments/assets/c5dd3500-4f77-4dd6-9d27-c9219c050996" />
+
 
 > **✅ Verify:** *What does the behavior section control?*
 > **Answer:** The `behavior` section dictates the velocity of scaling. In our configuration, it dictates that scaling UP has no stabilization delay (`0` seconds - meaning it reacts instantly to spikes), while scaling DOWN requires a 5-minute cooldown (`300` seconds) to prevent rapid fluctuations if load drops temporarily.
