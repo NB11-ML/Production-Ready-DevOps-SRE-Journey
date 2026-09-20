@@ -66,6 +66,9 @@ kubectl config set-context --current --namespace=capstone
 
 ```
 
+<img width="1694" height="750" alt="image" src="https://github.com/user-attachments/assets/c2035784-9d89-4b08-a96f-17d208259469" />
+
+
 ---
 
 ### Task 2: Deploy MySQL (Stateful, Secret, Headless Svc)
@@ -149,9 +152,10 @@ kubectl exec -it mysql-0 -- mysql -u wp_user -pwp_password -e "SHOW DATABASES;"
 
 ```
 
-> **✅ Verify:** *Can you see the wordpress database?*
-> **Answer:** *(Paste your terminal output here showing the `wordpress` database listed!)*
+<img width="2694" height="1938" alt="image" src="https://github.com/user-attachments/assets/53b36f1f-6d16-49b7-881e-a285f90f0687" />
 
+
+> **✅ Verify:** *Can you see the wordpress database?*
 ---
 
 ### Task 3 & 4: Deploy and Expose WordPress (Deploy, ConfigMap, Probes, NodePort)
@@ -237,17 +241,21 @@ spec:
 ```
 
 **2. Apply and Verify:**
-
 ```bash
 kubectl apply -f 02-wordpress.yaml
 kubectl get pods -w
 
 ```
 
-*(Once running, access your site at `http://<your-vm-ip>:30080` or via `kubectl port-forward svc/wordpress 30080:80`. Complete the setup wizard and write a test blog post!)*
+*(Once both pods are running, create a secure API tunnel bypassing the VM network by running `kubectl port-forward svc/wordpress 8080:80 -n capstone --address 0.0.0.0`. Then, open your physical machine's browser and access the site at `http://localhost:8080`. Complete the setup wizard and write a test blog post!)*
+
+<img width="2708" height="1962" alt="image" src="https://github.com/user-attachments/assets/e4b1fe34-c1f5-4526-8a61-a905db735120" />
 
 > **✅ Verify:** *Are both WordPress pods running and ready? Can you see the WordPress setup page?*
 > **Answer:** *(Confirm here once you have set up the admin account and created a post!)*
+
+<img width="2864" height="1608" alt="image" src="https://github.com/user-attachments/assets/bb76b681-c3a2-468a-8575-e85061ad0b6d" />
+
 
 ---
 
@@ -271,8 +279,13 @@ kubectl delete pod mysql-0
 
 ```
 
+<img width="2712" height="1310" alt="image" src="https://github.com/user-attachments/assets/0e132dab-5452-47b5-8c46-763c339a4302" />
+
+
 > **✅ Verify:** *After deleting both pods, is your blog post still there?*
 > **Answer:** *(Refresh your browser. State whether the post survived the database pod deletion!)*
+
+<img width="2854" height="1614" alt="image" src="https://github.com/user-attachments/assets/72b81255-6f16-43af-9789-6235459a1dc6" />
 
 ---
 
@@ -311,6 +324,7 @@ kubectl apply -f 03-hpa.yaml
 kubectl get hpa
 
 ```
+<img width="2686" height="1728" alt="image" src="https://github.com/user-attachments/assets/01cc50c7-70cd-4754-bc91-2398f14dbd5e" />
 
 > **✅ Verify:** *Does the HPA show correct min/max and target?*
 > **Answer:** *(Paste the output of `kubectl get hpa` here)*
@@ -325,6 +339,7 @@ To deploy this exact stack using Helm requires one command:
 helm install wp-helm bitnami/wordpress --namespace helm-test --create-namespace
 
 ```
+<img width="2708" height="636" alt="image" src="https://github.com/user-attachments/assets/ec6442a4-75de-43f2-8707-c0ff14f8fe1a" />
 
 **Comparison:** While Helm deployed the stack in seconds and created ~15 resources automatically, building it manually gave us total granular control over our specific StatefulSet DNS names, exact resource allocations, and custom probe timings. SREs must know how to build from scratch before they can safely automate with Helm.
 
