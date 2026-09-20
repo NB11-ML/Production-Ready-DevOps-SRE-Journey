@@ -347,16 +347,25 @@ helm install wp-helm bitnami/wordpress --namespace helm-test --create-namespace
 
 ### Task 8: Cleanup & SRE Reflection
 
-Take your final screenshot of `kubectl get all -n capstone` before destroying the environment!
+Take your final screenshot of `kubectl get all -n capstone` before destroying the environments!
 
+**1. Destroy the Manual Capstone Environment:**
 ```bash
 kubectl delete namespace capstone
 kubectl config set-context --current --namespace=default
 
 ```
 
-> **✅ Verify:** *Did deleting the namespace remove everything?*
-> **Answer:** Yes, deleting a namespace instantly garbage-collects all Deployments, StatefulSets, Services, Secrets, and HPAs inside it, effectively destroying the entire stack cleanly.
+**2. Destroy the Bonus Helm Environment:**
+
+```bash
+helm uninstall wp-helm -n helm-test
+kubectl delete namespace helm-test
+
+```
+
+> **✅ Verify:** *Did deleting the namespaces remove everything?*
+> **Answer:** Yes! Running `kubectl get pods -A` confirms that both the `capstone` and `helm-test` namespaces are completely gone. The cluster is back to its pristine default state, running only core `kube-system` components.
 
 ---
 
