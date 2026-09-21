@@ -14,15 +14,22 @@ You have spent the last several weeks orchestrating workloads on Kubernetes. But
 
 Before touching the terminal, it is critical to understand the philosophy behind IaC.
 
-*   **What is IaC and why does it matter?** 
+*   **What is IaC and why does it matter?**
+  
     Infrastructure as Code is the practice of managing and provisioning computing environments through machine-readable definition files rather than physical hardware configuration or interactive configuration tools. For an SRE, it matters because it brings infrastructure into the realm of software engineering—enabling version control (Git), peer reviews, auditability, and immediate disaster recovery.
-*   **Manual Console vs. IaC:** 
+
+*   **Manual Console vs. IaC:**
+  
     Clicking through a cloud console leads to "ClickOps"—configuration drift, untracked changes, and human error. IaC solves this by ensuring your infrastructure is 100% reproducible. If a region goes down, you can spin up an exact replica in minutes.
+    
 *   **How is Terraform different?**
+  
     *   *CloudFormation:* AWS-only. Terraform is **cloud-agnostic** (works with AWS, GCP, Azure, Kubernetes, etc.).
     *   *Ansible:* Primarily a configuration management tool (procedural). Terraform is an infrastructure provisioning tool (declarative).
     *   *Pulumi:* Uses standard programming languages (Python, Go). Terraform uses its own declarative language (HCL - HashiCorp Configuration Language).
-*   **"Declarative" meaning:** 
+      
+*   **"Declarative" meaning:**
+  
     You declare the *end state* you want (e.g., "I want 1 S3 bucket and 3 EC2 instances"). You do not write the step-by-step API scripts to create them. Terraform's engine calculates the steps needed to achieve that state.
 
 ---
@@ -36,9 +43,13 @@ Since you are operating on a Linux VM environment, we will install the HashiCorp
 wget -O - [https://apt.releases.hashicorp.com/gpg](https://apt.releases.hashicorp.com/gpg) | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
 echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] [https://apt.releases.hashicorp.com](https://apt.releases.hashicorp.com) $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
 sudo apt update && sudo apt install terraform -y
+
 terraform -version
 
 ```
+
+<img width="1784" height="388" alt="image" src="https://github.com/user-attachments/assets/358e8d3e-d18c-4f8d-9f1c-d4d124ef7c00" />
+
 
 **2. Configure AWS CLI:**
 
@@ -87,19 +98,38 @@ terraform {
 }
 
 provider "aws" {
-  region = "ap-south-1"
+  region = "us-east-1"
 }
 
-resource "aws_s3_bucket" "my_bucket" {
+resource "aws_s3_bucket" "terrabucket" {
   # MUST BE GLOBALLY UNIQUE! 
-  bucket = "terraweek-sre-bucket-09212026" 
+  bucket = "terrabucketdev" 
 }
 
 ```
+**terraform initialization:**
 
-> 🚨 **SRE Troubleshooting:** If you run into a `409 BucketAlreadyExists` error during the apply phase, it means someone else on AWS has already taken your bucket name. Change the `bucket` attribute to something highly unique (e.g., append your name and the date) and try again!
+<img width="1790" height="568" alt="image" src="https://github.com/user-attachments/assets/46d888bd-c46b-4a8d-9148-a3a6fde6bae8" />
+
+
+**terraform plan:**
+
+<img width="1798" height="1092" alt="image" src="https://github.com/user-attachments/assets/a3e079e9-9308-4ea2-b495-69332ff2c88a" />
+
+**terraform apply:**
+
+<img width="1804" height="584" alt="image" src="https://github.com/user-attachments/assets/bfb5a284-eb7b-4860-bf04-6ba29ecda5b6" />
+
+**Aws S3 Bucket (Web Console):**
+
+<img width="1800" height="678" alt="image" src="https://github.com/user-attachments/assets/4d6f7685-cbaa-471e-a21b-abcda9642297" />
+
+> 🚨**SRE Troubleshooting:** If you run into a `409 BucketAlreadyExists` error during the apply phase, it means someone else on AWS has already taken your bucket name. Change the `bucket` attribute to something highly unique (e.g., append your name and the date) and try again!
+
+<img width="2338" height="284" alt="image" src="https://github.com/user-attachments/assets/67f7b786-d1e1-47c8-920e-d337982ebfa4" />
 
 **3. The Core Terraform Lifecycle:**
+Execute these commands in sequence to format, validate, and build your infrastructure:
 
 ```bash
 terraform init
@@ -109,6 +139,13 @@ terraform plan
 terraform apply
 
 ```
+
+* **`terraform init`**: Initializes the project workspace and downloads the necessary AWS provider plugins into a hidden `.terraform/` directory.
+* **`terraform fmt`**: Automatically formats your HCL code to standardize spacing and indentation (a strict DevOps best practice before committing to Git).
+* **`terraform validate`**: Scans your `.tf` files for syntax errors and configuration validity locally, without attempting to connect to AWS.
+* **`terraform plan`**: Performs a dry run. It compares your code against the existing state and outputs a detailed blueprint of exactly what will be created, updated, or destroyed.
+* **`terraform apply`**: Executes the blueprint and physically provisions the resources in your AWS account (requires a manual `yes` confirmation).
+
 
 **Documentation Checkpoint:**
 
@@ -124,13 +161,13 @@ Now, let's update our infrastructure to include a virtual machine.
 **1. Update `main.tf` by appending this block:**
 
 ```hcl
-resource "aws_instance" "app_server" {
-  ami           = "ami-0f5ee92e2d63afc18" # Amazon Linux 2 (ap-south-1)
-  instance_type = "t2.micro"
-
-  tags = {
-    Name = "TerraWeek-Day1"
-  }
+resource "aws_instance" "terraec2" {
+    ami = "ami-0fef201115eefe936"
+    instance_type = "t3.micro"
+    tags = {
+        Name = "TerraWeek-Day1" 
+    }
+  
 }
 
 ```
@@ -142,8 +179,15 @@ terraform plan
 terraform apply
 
 ```
+**terraform plan:**
+<img width="1834" height="1164" alt="image" src="https://github.com/user-attachments/assets/8ea5cbdb-d16a-4e19-a4fd-b174073496aa" />
+<img width="1822" height="428" alt="image" src="https://github.com/user-attachments/assets/ede73f69-7635-46f9-9182-d4ba519445c8" />
 
-*(Notice the output says `Plan: 1 to add, 0 to change, 0 to destroy`).*
+**terraform apply:**
+
+<img width="1830" height="1138" alt="image" src="https://github.com/user-attachments/assets/ec7d5ad2-adf6-4ce3-a492-cbfa9bfbb7e9" />
+<img width="1832" height="650" alt="image" src="https://github.com/user-attachments/assets/20464b70-9cc7-45e1-b1bc-b4524c340a62" />
+
 
 **Documentation Checkpoint:**
 
@@ -163,6 +207,12 @@ terraform state list
 terraform state show aws_instance.app_server
 
 ```
+
+<img width="1174" height="882" alt="image" src="https://github.com/user-attachments/assets/f11841d0-8a82-4186-a47d-adcf0f08b835" />
+
+<img width="1830" height="1158" alt="image" src="https://github.com/user-attachments/assets/01d475ff-e34d-406c-9d98-a61e862a7afd" />
+
+<img width="2024" height="176" alt="image" src="https://github.com/user-attachments/assets/06575295-e7ae-4776-9848-4c305707ebfc" />
 
 **Documentation Checkpoint:**
 
@@ -190,12 +240,16 @@ terraform plan
 * `-` means **Destroy**
 * `~` means **Update in-place** (Your plan should show a `~` because changing a tag does not require terminating the EC2 server).
 
+<img width="1832" height="1000" alt="image" src="https://github.com/user-attachments/assets/9ce1ef3e-5a28-479b-9ccf-a82798c1d857" />
+  
 **3. Apply the change:**
 
 ```bash
 terraform apply
 
 ```
+<img width="1842" height="458" alt="image" src="https://github.com/user-attachments/assets/b0f3cfc2-9938-4e20-a94a-aabb5402cab4" />
+<img width="2094" height="172" alt="image" src="https://github.com/user-attachments/assets/de7b6375-9b09-4c86-95e3-474642d8ce80" />
 
 **4. The SRE Clean Up (Destroy):**
 Never leave test infrastructure running. Wipe it completely clean.
@@ -204,6 +258,7 @@ Never leave test infrastructure running. Wipe it completely clean.
 terraform destroy
 
 ```
+
 
 *(Type `yes`. Verify in your AWS Console that both the EC2 instance and S3 bucket are gone).*
 
