@@ -186,7 +186,7 @@ terraform apply
 **terraform apply:**
 
 <img width="1830" height="1138" alt="image" src="https://github.com/user-attachments/assets/ec7d5ad2-adf6-4ce3-a492-cbfa9bfbb7e9" />
-<img width="1832" height="650" alt="image" src="https://github.com/user-attachments/assets/20464b70-9cc7-45e1-b1bc-b4524c340a62" />
+<img width="1832" height="650" alt="image" src="https://github.com/user-attachments/assets/6811cef3-b057-4d0c-8e9d-548e1ce5822b" />
 
 
 **Documentation Checkpoint:**
