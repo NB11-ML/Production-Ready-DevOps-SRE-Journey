@@ -15,14 +15,14 @@ This module focuses on transforming static, hardcoded AWS infrastructure into dy
 
 ## 📂 Project Structure
 
+
 ```text
-📦 day-63-terraform-variables
- ┣ 📜 main.tf             # Core infrastructure (VPC, Subnets, EC2, SG)
- ┣ 📜 variables.tf        # Variable declarations and default values
- ┣ 📜 outputs.tf          # Output definitions for IP addresses and IDs
- ┣ 📜 terraform.tfvars    # Default variable values (Development)
- ┣ 📜 prod.tfvars         # Production variable overrides
- ┗ 📜 README.md           # Project documentation
+📦 day-63
+ ┣ 📂 manifest                       # Directory containing the core Terraform configuration files (main.tf, variables.tf, outputs.tf, etc.)[cite: 2]
+ ┣ 📜 .gitignore                     # Git ignore file to prevent committing local state and secrets[cite: 2]
+ ┣ 📜 01-Day-63-variables-Outputs.md # Detailed execution guide and task breakdown[cite: 2]
+ ┣ 📜 02-Day-63-Cheat-Sheat.md       # Cheat sheet for Terraform variables, data sources, and expressions[cite: 2]
+ ┗ 📜 README.md                      # Master project documentation and overview[cite: 2]
 
 ```
 
