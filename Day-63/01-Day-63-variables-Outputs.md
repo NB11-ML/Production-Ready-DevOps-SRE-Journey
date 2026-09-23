@@ -1,4 +1,4 @@
-# 🌍 Day 63: Variables, Outputs, Data Sources, and Expressions
+# <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/terraform/terraform-original.svg" width="30" height="30" alt="Terraform Logo" />  Day 63: Variables, Outputs, Data Sources, and Expressions
 
 ![Terraform](https://img.shields.io/badge/Terraform-7B42BC?style=for-the-badge&logo=terraform&logoColor=white)
 ![AWS](https://img.shields.io/badge/AWS-232F3E?style=for-the-badge&logo=amazon-aws&logoColor=white)
