@@ -184,6 +184,21 @@ terraform plan -var-file="prod.tfvars"
 terraform plan -var="instance_type=t2.nano"
 
 ```
+**terraform plan : Automatically uses terraform.tfvars.** 
+
+**Deploys a t2.micro.**
+<img width="1706" height="1362" alt="image" src="https://github.com/user-attachments/assets/b73e8769-01a9-4153-b46c-9ffd8f516026" />
+
+**terraform plan -var-file="prod.tfvars" : Forces Terraform to use prod.tfvars.**
+
+**Notice the instance changes to t3.small!**
+<img width="1696" height="1376" alt="image" src="https://github.com/user-attachments/assets/86c77007-c934-4de4-9660-348c40909afb" />
+<img width="1690" height="1386" alt="image" src="https://github.com/user-attachments/assets/8960989a-3174-4026-a9f2-97c028997596" />
+
+**terraform plan -var="instance_type=t2.nano" : Overrides both files and forces a nano instance.**
+
+<img width="1692" height="1362" alt="image" src="https://github.com/user-attachments/assets/36e3ab0d-a5f6-4a86-93a0-30e9ab1c85da" />
+
 
 ---
 
