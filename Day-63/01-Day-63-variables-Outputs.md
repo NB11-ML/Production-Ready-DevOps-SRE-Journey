@@ -248,6 +248,12 @@ terraform output instance_public_ip       # Shows just the IP
 terraform output -json                    # Great for CI/CD scripting!
 
 ```
+**terraform apply**
+<img width="1704" height="488" alt="image" src="https://github.com/user-attachments/assets/c40ac9a3-0244-4384-8983-a2d4c0448b0f" />
+
+**terraform output's**
+<img width="1698" height="442" alt="image" src="https://github.com/user-attachments/assets/ddbbc63c-5f32-4472-9cdb-9bfbe0e0e87c" />
+<img width="1692" height="1308" alt="image" src="https://github.com/user-attachments/assets/9f7c668f-453b-48bd-b4dc-1455cedb483a" />
 
 ---
 
@@ -324,6 +330,9 @@ tags = merge(local.common_tags, {
 
 ```
 
+<img width="1690" height="1102" alt="image" src="https://github.com/user-attachments/assets/d75bca2a-ad9a-44d3-b820-9bcc45f9405f" />
+<img width="1688" height="518" alt="image" src="https://github.com/user-attachments/assets/9ea7648c-7b8c-453b-8ca0-11204b033f74" />
+
 ---
 
 ## 🧮 Task 6: Conditional Expressions and Built-in Functions
@@ -352,6 +361,9 @@ instance_type = var.environment == "prod" ? "t3.small" : "t2.micro"
 
 ```
 
+<img width="851" height="575" alt="Screenshot 2026-09-23 at 17 28 40" src="https://github.com/user-attachments/assets/bbad4276-6916-4f0f-9159-58f720256663" />
+
+
 ### 💻 Execution: Practicing Built-in Functions in the Console
 
 Use the interactive shell to test functions without deploying anything.
@@ -372,6 +384,9 @@ terraform console
 > exit
 
 ```
+
+<img width="1696" height="522" alt="image" src="https://github.com/user-attachments/assets/5cbeef1b-566a-4714-ad1c-f378f7c65c7c" />
+
 
 ---
 
