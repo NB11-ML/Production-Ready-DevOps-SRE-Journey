@@ -3,9 +3,6 @@
 To ensure zero surprise charges on your AWS bill after tearing down production infrastructure (such as EKS clusters, VPCs, NAT Gateways, and Load Balancers), it is best practice as an SRE to actively verify that no orphaned resources remain in your account. 
 
 Run the following AWS CLI commands in your terminal to verify that your `us-east-1` region is completely clean.
-
-```
-
 ---
 
 ## 1. Verify Load Balancers (Classic & v2)
