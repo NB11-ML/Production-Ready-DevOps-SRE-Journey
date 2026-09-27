@@ -252,6 +252,25 @@ output "public_ip" { value = aws_instance.server.public_ip }
 
 ```
 
+### 🧠 Mental Model: How Terraform Modules Communicate
+
+If you are wondering why there are multiple `main.tf` files and how data moves between them, think of a Terraform project like a professional restaurant kitchen:
+
+**The Root `main.tf` is the Head Chef.** 
+The Head Chef doesn't actually cook the food. Their job is to read the customer's order ticket (your `.tfvars` file) and coordinate the kitchen stations. 
+
+**The Child Modules are the Specialized Kitchen Stations.**
+*   `modules/vpc/` is the **Prep Station** (Networking).
+*   `modules/security-group/` is the **Grill Station** (Firewalls).
+*   `modules/ec2-instance/` is the **Plating Station** (Compute).
+
+**How the data flows between them:**
+1. **Data flows IN via Variables:** The Head Chef reads the ticket and yells to the Prep Station (VPC Module), *"I need a network, and the size needs to be `10.0.0.0/16`!"* The Prep Station accepts this data through its `variables.tf` file and builds the network.
+2. **Data flows OUT via Outputs:** The Prep Station finishes and yells back to the Head Chef, *"Network is done! The ID is `vpc-12345`!"* It passes this ID back up to the Chef using its `outputs.tf` file.
+3. **Data flows BETWEEN modules:** The Head Chef takes that `vpc-12345` ID and hands it to the Grill Station (Security Group Module), saying, *"Build a firewall, and attach it to `vpc-12345`."* 
+
+By setting it up this way, the Grill Station doesn't need to know how to build a VPC, and the Prep Station doesn't need to know how to build a firewall. They just take instructions (`variables.tf`) from the Head Chef, do their specific job in their own `main.tf`, and hand back the results (`outputs.tf`).
+
 ---
 
 ## 🔌 Task 4: Wire It All Together (Root Config)
