@@ -21,8 +21,8 @@ Terraform relies on plugins called "providers" to interact with cloud APIs.
 
 **The `.terraform.lock.hcl` File:**
 
-When running `terraform init`, Terraform generates a lock file[cite: 5, 6]. 
-This file records the exact provider versions and cryptographic hashes downloaded[cite: 6]. 
+When running `terraform init`, Terraform generates a lock file. 
+This file records the exact provider versions and cryptographic hashes downloaded. 
 It ensures that if another engineer clones this repository six months from now, 
 Terraform will use the exact same provider version, preventing the "it works on my machine" problem.
 
