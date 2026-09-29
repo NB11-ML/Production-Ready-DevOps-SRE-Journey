@@ -79,7 +79,7 @@ To keep playbooks clean and reusable, variables should not live inside the playb
 Create this structure in your working directory:
 
 ```text
-ansible-practice/
+ansible-practice/Day-70/
 ├── inventory.ini
 ├── ansible.cfg
 ├── group_vars/
@@ -92,6 +92,8 @@ ansible-practice/
     └── site.yml
 
 ```
+<img width="1648" height="588" alt="image" src="https://github.com/user-attachments/assets/056e9f81-efd4-43a0-aafe-9e704ffb7a52" />
+
 
 ### 2. Variable Files
 
@@ -168,6 +170,10 @@ Write a playbook that utilizes these newly created inventory variables:
 ### 🧠 Variable Precedence Documented
 
 Ansible applies variables based on a strict hierarchy. If the same variable name exists in multiple places, the one with higher precedence wins.
+
+<img width="2026" height="1660" alt="image" src="https://github.com/user-attachments/assets/96f68e82-3ddd-4626-b2b8-2a07bb6e05f4" />
+
+
 **Order (Lowest to Highest):**
 
 1. Role Defaults
@@ -178,6 +184,7 @@ Ansible applies variables based on a strict hierarchy. If the same variable name
 6. Command line extra vars (`-e` overrides everything)
 
 ---
+
 
 ## 📌 Task 3: Ansible Facts — Gathering System Information
 
@@ -194,6 +201,9 @@ ansible web-server -i inventory.ini -m setup -a "filter=ansible_memtotal_mb"
 ansible web-server -i inventory.ini -m setup -a "filter=ansible_default_ipv4"
 
 ```
+
+<img width="2266" height="1324" alt="image" src="https://github.com/user-attachments/assets/bde14c89-9123-45e6-92dd-653ceb05afcf" />
+
 
 ### 2. Create `facts-demo.yml`
 
@@ -214,6 +224,9 @@ ansible web-server -i inventory.ini -m setup -a "filter=ansible_default_ipv4"
         var: ansible_interfaces
 
 ```
+
+<img width="2784" height="1692" alt="image" src="https://github.com/user-attachments/assets/b17321eb-d59f-492a-9ac6-5efbe438e3e6" />
+
 
 ### 🧠 5 Useful Ansible Facts for Real-World Playbooks
 
@@ -276,6 +289,9 @@ Tasks should not always run on every host. Use the `when` keyword to control exe
       when: "'web' in group_names or 'app' in group_names"
 
 ```
+
+<img width="1744" height="1916" alt="image" src="https://github.com/user-attachments/assets/048e5311-e095-4985-89a3-ced879b7df5d" />
+
 
 ### 🚀 Execution & Verification
 
@@ -342,6 +358,9 @@ Loops allow you to iterate over a list of items to perform repetitive tasks clea
       loop: "{{ users }}"
 
 ```
+<img width="1758" height="1408" alt="image" src="https://github.com/user-attachments/assets/d6893405-b6cc-47d5-9fe9-5f35ec0bcdf7" />
+<img width="1732" height="974" alt="image" src="https://github.com/user-attachments/assets/938a2df3-07b6-4838-92d0-531c1eb83c97" />
+
 
 ### 🧠 `loop` vs. `with_items`
 
