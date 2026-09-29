@@ -53,6 +53,7 @@ Run the playbook:
 ansible-playbook -i inventory.ini variables-demo.yml
 
 ```
+<img width="1702" height="1468" alt="image" src="https://github.com/user-attachments/assets/b57c8c20-a00f-44e1-af17-7b37a42c2289" />
 
 Now, override variables directly from the command line using `-e` (Extra Vars):
 
@@ -60,8 +61,12 @@ Now, override variables directly from the command line using `-e` (Extra Vars):
 ansible-playbook -i inventory.ini variables-demo.yml -e "app_name=my-custom-app app_port=9090"
 
 ```
+<img width="2056" height="1292" alt="image" src="https://github.com/user-attachments/assets/c677099d-8af3-4902-9520-2e605aafe41e" />
+
 
 **Observation:** The CLI `-e` flag successfully overrides the playbook variables. The application directory created on the servers will be `/opt/my-custom-app` instead of `/opt/terraweek-app`.
+
+<img width="2618" height="828" alt="image" src="https://github.com/user-attachments/assets/810a5637-aacf-4609-a42d-a1b948bd7bbd" />
 
 ---
 
@@ -75,16 +80,16 @@ Create this structure in your working directory:
 
 ```text
 ansible-practice/
-  inventory.ini
-  ansible.cfg
-  group_vars/
-    all.yml
-    web.yml
-    db.yml
-  host_vars/
-    web-server.yml
-  playbooks/
-    site.yml
+├── inventory.ini
+├── ansible.cfg
+├── group_vars/
+│   ├── all.yml
+│   ├── web.yml
+│   └── db.yml
+├── host_vars/
+│   └── web-server.yml
+└── playbooks/
+    └── site.yml
 
 ```
 
