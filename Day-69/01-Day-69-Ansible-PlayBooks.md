@@ -59,7 +59,7 @@ Playbooks turn ad-hoc commands into repeatable, version-controlled infrastructur
     - name: Create a custom index page
       copy:
         content: |
-          "Deployed by Ansible - TerraWeek Server"
+          Deployed by Ansible - TerraWeek Server
         dest: /var/www/html/index.html
 
 ```
@@ -73,7 +73,12 @@ ansible-playbook -i inventory.ini install-nginx.yml
 
 ```
 
+<img width="2012" height="788" alt="image" src="https://github.com/user-attachments/assets/f76a716a-0fdb-43fe-8e42-2ebfe4e65ac3" />
+
 **Observation 1 (First Run):** Tasks show `changed` in yellow. Ansible updated the apt cache, downloaded the package, started the service, and created the file.
+
+
+<img width="2164" height="800" alt="image" src="https://github.com/user-attachments/assets/8900a897-8a3d-4887-997a-a78c367e2bf1" />
 
 **Observation 2 (Second Run):** Run the exact same command again. Tasks show `ok` in green. This is **Idempotency**—Ansible checks the current state against the desired state and does nothing if the target is already compliant.
 
@@ -86,6 +91,11 @@ curl http://
 # Deployed by Ansible - TerraWeek Server
 
 ```
+
+<img width="1730" height="222" alt="image" src="https://github.com/user-attachments/assets/98ef3412-3967-4d3f-bb02-979c47aeea05" />
+
+<img width="1210" height="228" alt="image" src="https://github.com/user-attachments/assets/71cbf3d6-82c2-4551-9b55-59ed50eebce2" />
+
 
 ---
 
