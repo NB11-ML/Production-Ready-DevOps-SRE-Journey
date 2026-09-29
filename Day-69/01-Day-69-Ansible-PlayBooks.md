@@ -126,6 +126,7 @@ At the **play level**, it runs *every* task in that play with elevated (root) pr
 * **What happens if a task fails?**
 By default, Ansible immediately stops executing the remaining tasks for the specific host that failed. Other hosts that succeeded will continue executing.
 
+
 ---
 
 ## 📌 Task 3: Essential Modules
@@ -201,10 +202,36 @@ Create `essential-modules.yml` to practice the most heavily used automation modu
 
 ```
 
+### 🚀 Execution & Verification
+
+Run the essential modules playbook against your infrastructure:
+
+```bash
+ansible-playbook -i inventory.ini essential-modules.yml
+```
+<img width="1768" height="1252" alt="image" src="https://github.com/user-attachments/assets/0177ee5f-074a-4261-b52b-4e125ebf6a53" />
+<img width="1744" height="1486" alt="image" src="https://github.com/user-attachments/assets/da1642e9-1bb8-41d5-9698-72599bc80efb" />
+<img width="1772" height="1098" alt="image" src="https://github.com/user-attachments/assets/be1f4570-4de0-489c-9bca-870c667230ae" />
+
+
 ### 🧠 `command` vs. `shell`
 
 * **`command`:** Executes the command directly on the host without going through a shell environment. It is safer, more predictable, and prevents shell injection, but it **cannot** process shell operators like pipes (`|`), redirects (`>`), or environment variables (`$HOME`).
 * **`shell`:** Runs the command through `/bin/sh`. You **must** use this if your command relies on pipes, redirects, or stringing multiple commands together. It should be used sparingly due to potential security risks if passing unsanitized variables.
+
+### 🧠 Core Concepts & Module Breakdown
+
+Task 3 introduces the most frequently used operational modules in enterprise automation:
+
+* **Package Management (`apt`):** Automates installation, updates, and removal of OS packages. Setting `update_cache: true` acts like running `apt-get update` before installing packages.
+* **Service Management (`service`):** Ensures system daemons are running or stopped. We used the conditional expression `when: "'web' in group_names"` to target *only* the web group, preventing service errors on app or database nodes.
+* **File Copy (`copy`):** Pushing configuration files from your local control machine to a remote destination with explicit permissions (`owner`, `group`, `mode`).
+* **Directory Management (`file`):** Used to create directories, set permissions, or manage symlinks on the remote target.
+* **Command vs. Shell Execution (`command` vs. `shell`):** The `command` module runs raw commands safely without a shell environment, while `shell` runs commands through `/bin/sh` to allow pipe operations (`|`) and redirects.
+* **Data Registration (`register`):** Captures the standard output of a command into an internal variable (e.g., `register: disk_output`) so subsequent tasks can process or print it using the `debug` module.
+* **Line Injection (`lineinfile`):** Ensures a specific line exists in a configuration file (like `/etc/environment`), adding it or modifying it safely without rewriting the entire file.
+
+
 
 ---
 
