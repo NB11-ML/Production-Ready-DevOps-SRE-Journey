@@ -239,6 +239,36 @@ Task 3 introduces the most frequently used operational modules in enterprise aut
 
 Handlers are special tasks that only execute when notified by another task that resulted in a `changed` state. This prevents unnecessary service restarts.
 
+### 1. Create the Local Configuration File
+
+Before running the playbook, ensure you have a local configuration source file prepared[cite: 5]:
+
+```bash
+mkdir -p files
+nano files/nginx.conf
+```
+**files/nginx.conf**
+
+```conf
+events {
+    worker_connections 1024;
+}
+
+http {
+    server {
+        listen 80;
+        server_name localhost;
+
+        location / {
+            root /var/www/html;
+            index index.html index.htm;
+        }
+    }
+}
+
+```
+### 2. Create your local Nginx config
+
 Create `nginx-config.yml`:
 
 ```yaml
@@ -282,10 +312,38 @@ Create `nginx-config.yml`:
 
 ```
 
+### 🚀 Execution & Verification
+
+Run your configuration playbook with handlers enabled:
+
+```bash
+ansible-playbook -i inventory.ini nginx-config.yml
+
+```
+
+
+
+### 🧠 Core Concepts & Handler Behavior
+
+Handlers are event-driven tasks that solve a critical infrastructure challenge: **preventing unnecessary service restarts.**
+
+* **The Trigger (`notify`):** When a task results in a `changed` state (like updating a configuration file or a template), it fires a notification pointing to the handler's exact name. If the task finishes with `ok` (no changes made), the notification is ignored.
+* **Execution Timing:** Handlers **do not** run immediately when notified. Ansible queues them up and executes them *at the very end of the play*. This ensures that even if multiple configuration tasks notify the same handler, the service is only restarted **once** rather than after every individual task.
+
+
 **Handler Verification:**
 
 1. **First Run:** The `copy` task changes the config file. It notifies the handler. At the end of the play, Nginx restarts.
+
+<img width="2082" height="956" alt="image" src="https://github.com/user-attachments/assets/5a35edab-38fe-4979-b688-ee2a51369cbc" />
+
+
+
 2. **Second Run:** The `copy` task sees the file is already correct (`ok`). Because it didn't change, the `notify` trigger is suppressed. The handler **does not run**, saving the service from an unnecessary restart.
+
+
+<img width="1648" height="386" alt="image" src="https://github.com/user-attachments/assets/04a5fa9f-cbfb-4d14-b534-82f5fb4255a9" />
+
 
 ---
 
@@ -384,5 +442,9 @@ Create `multi-play.yml`:
 
 ```
 
+<img width="2014" height="1504" alt="image" src="https://github.com/user-attachments/assets/fab516f1-2d6b-420d-baa1-2227b300ccb9" />
+
+
 **Execution Result:**
+
 When you run `ansible-playbook -i inventory.ini multi-play.yml`, you will see Ansible systematically target the `[web]` hosts first, followed by the `[app]` hosts, and finally the `[db]` hosts, isolating the packages exactly where they belong in the architecture.
