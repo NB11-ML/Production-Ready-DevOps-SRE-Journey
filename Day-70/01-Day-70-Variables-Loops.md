@@ -376,51 +376,59 @@ Build a real-world playbook that combines variables, facts, conditionals, and th
 ### 1. Create `server-report.yml`
 
 ```yaml
-- name: Server Health Report
+---
+- name: Server health report
   hosts: all
   become: true
+  gather_facts: true     # Ensures OS, IP, RAM, and Time facts are loaded safely
 
   tasks:
     - name: Check disk space
-      command: df -h /
+      ansible.builtin.command: df -h /
       register: disk_result
-
-    - name: Check memory
-      command: free -m
+    
+    - name: check memory
+      ansible.builtin.command: free -m
       register: memory_result
-
-    - name: Check running services
-      shell: systemctl list-units --type=service --state=running | head -20
+    
+    - name: check running services
+      ansible.builtin.shell: systemctl list-units --type=service --state=running | head -20
       register: services_result
-
-    - name: Generate report on terminal
-      debug:
+    
+    - name: generate report on terminal
+      ansible.builtin.debug:
         msg:
           - "========== {{ inventory_hostname }} =========="
-          - "OS: {{ ansible_distribution }} {{ ansible_distribution_version }}"
-          - "IP: {{ ansible_default_ipv4.address }}"
-          - "RAM: {{ ansible_memtotal_mb }}MB"
-          - "Disk: {{ disk_result.stdout_lines[1] }}"
+          - "OS: {{ ansible_distribution | default('Unknown') }} {{ ansible_distribution_version | default('') }}"
+          - "IP: {{ ansible_default_ipv4.address | default('No IP found') }}"
+          - "RAM: {{ ansible_memtotal_mb | default('0') }}MB"
+          - "Disk: {{ disk_result.stdout_lines.1 | default('N/A') }}"   # Fixed 'defaults' typo here
           - "Running services (first 20): {{ services_result.stdout_lines | length }}"
 
     - name: Flag if disk is critically low
-      debug:
+      ansible.builtin.debug:
         msg: "ALERT: Check disk space on {{ inventory_hostname }}"
       when: "'9[0-9]%' in disk_result.stdout or '100%' in disk_result.stdout"
 
     - name: Save report to file
-      copy:
+      ansible.builtin.copy:
         content: |
           Server: {{ inventory_hostname }}
-          OS: {{ ansible_distribution }} {{ ansible_distribution_version }}
-          IP: {{ ansible_default_ipv4.address }}
-          RAM: {{ ansible_memtotal_mb }}MB
+          OS: {{ ansible_distribution | default('Unknown') }} {{ ansible_distribution_version | default('') }}
+          IP: {{ ansible_default_ipv4.address | default('No IP found') }}
+          RAM: {{ ansible_memtotal_mb | default('0') }}MB
           Disk: 
           {{ disk_result.stdout }}
-          Checked at: {{ ansible_date_time.iso8601 }}
+          Checked at: {{ ansible_date_time.iso8601 | default('Unknown Time') }}
         dest: "/tmp/server-report-{{ inventory_hostname }}.txt"
 
+
 ```
+**NOTE: I have Comment out Ip in terminal output of my code thats why it is not showing in output**
+
+<img width="1712" height="1962" alt="image" src="https://github.com/user-attachments/assets/1d9904e8-1a79-48b7-b78b-26b90cd72055" />
+
+
 
 ### 🚀 Execution & Verification
 
@@ -434,3 +442,6 @@ ssh ubuntu@
 cat /tmp/server-report-*.txt
 
 ```
+
+<img width="1324" height="310" alt="Screenshot 2026-09-30 at 01 10 17" src="https://github.com/user-attachments/assets/04e0d73a-d1ad-4a9b-8d79-569369f093db" />
+
