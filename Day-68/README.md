@@ -9,7 +9,6 @@ Instead of relying on local virtual machines or a default AWS VPC, this lab embr
 To maintain a professional repository layout, Infrastructure as Code (IaC) is strictly separated from Configuration Management.
 
 ```text
-
 Prod-Ansible/
 ├── Terra-Ansi-Infra/          # Terraform code for AWS provisioning
 │   └── main.tf                # VPC, Security Groups, EC2 instances, Outputs
