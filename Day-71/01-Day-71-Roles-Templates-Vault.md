@@ -129,7 +129,12 @@ ansible-playbook -i inventory.ini template-demo.yml --diff
 
 ```
 
+<img width="3040" height="2060" alt="image" src="https://github.com/user-attachments/assets/65a37b54-df1c-4685-bb52-91d2af4353f2" />
+
+
 **Observation:** SSH into the web server and read the generated config. You will see that variables like `{{ app_name }}` and `{{ ansible_hostname }}` are completely replaced with actual values.
+
+<img width="3412" height="1036" alt="image" src="https://github.com/user-attachments/assets/9eb9dc2d-08f8-4202-a314-9d0aff6ac3cb" />
 
 ---
 
