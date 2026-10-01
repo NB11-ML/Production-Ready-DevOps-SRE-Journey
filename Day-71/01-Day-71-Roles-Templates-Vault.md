@@ -10,6 +10,46 @@ Today you learn Ansible Roles (the standard way to structure automation), Jinja2
 
 ---
 
+## 📌 Day 71 Directory Structure Reference
+
+Here is the complete folder and file hierarchy you will build throughout today's tasks.
+
+```text
+ansible-practice/Day-71/
+├── inventory.ini                  # Your server IPs
+├── ansible.cfg                    # Ansible config (for vault_password_file)
+├── .vault_pass                    # (Task 5) Vault password file (Add to .gitignore!)
+├── requirements.yml               # (Task 4) Ansible Galaxy dependencies
+│
+├── template-demo.yml              # (Task 1) Standalone playbook for templates
+├── docker-setup.yml               # (Task 4) Playbook using Galaxy role
+├── db-setup.yml                   # (Task 5) Playbook testing vault secrets
+├── site.yml                       # (Task 3 & 6) Master playbook calling roles
+│
+├── group_vars/                    
+│   └── db/
+│       └── vault.yml              # (Task 5) Encrypted secrets for the DB servers
+│
+├── templates/                     # 📂 PLAYBOOK-LEVEL TEMPLATES
+│   ├── nginx-vhost.conf.j2        # (Task 1) Used by template-demo.yml
+│   └── db-config.j2               # (Task 6) Used by site.yml
+│
+└── roles/
+    └── webserver/                 # 📂 YOUR CUSTOM ROLE
+        ├── tasks/
+        │   └── main.yml           # (Task 3) Role tasks
+        ├── handlers/
+        │   └── main.yml           # (Task 3) Role handlers
+        ├── defaults/
+        │   └── main.yml           # (Task 3) Role variables
+        └── templates/             # 📂 ROLE-LEVEL TEMPLATES
+            ├── index.html.j2      # (Task 3)
+            ├── nginx.conf.j2      # (Task 3) 
+            └── vhost.conf.j2      # (Task 3)
+
+```
+
+---
 ## 📌 Task 1: Jinja2 Templates
 
 Templates let you generate config files dynamically using variables and facts.
