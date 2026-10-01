@@ -67,7 +67,7 @@ server {
     index index.html;
 
     location / {
-        try_files \(uri\)uri/ =404;
+        try_files $uri $uri/ =404;
     }
 
     access_log /var/log/nginx/{{ app_name }}_access.log;
@@ -175,6 +175,9 @@ ansible-galaxy init roles/webserver
 
 ```
 
+<img width="1686" height="850" alt="image" src="https://github.com/user-attachments/assets/2ce8148b-be2b-410b-a801-68447162f586" />
+
+
 ### 🧠 `vars/main.yml` vs. `defaults/main.yml`
 
 * **`defaults/main.yml`**: Default variables with low priority; easily overridden by callers.
@@ -182,14 +185,14 @@ ansible-galaxy init roles/webserver
 
 ---
 
-## 📌 Task 3: Build a Custom Webserver Role
+### 📌 Task 3: Build a Custom Webserver Role
 
 Build a complete webserver role from scratch:
 
 ### 1. Role Variable Defaults (`roles/webserver/defaults/main.yml`)
 
 ```yaml
----
+
 http_port: 80
 app_name: myapp
 max_connections: 512
@@ -199,7 +202,7 @@ max_connections: 512
 ### 2. Role Tasks (`roles/webserver/tasks/main.yml`)
 
 ```yaml
----
+
 - name: Install Nginx
   apt:
     name: nginx
@@ -245,7 +248,7 @@ max_connections: 512
 ### 3. Role Handlers (`roles/webserver/handlers/main.yml`)
 
 ```yaml
----
+
 - name: Restart Nginx
   service:
     name: nginx
@@ -253,18 +256,69 @@ max_connections: 512
 
 ```
 
-### 4. Role Template (`roles/webserver/templates/index.html.j2`)
+### 4. Role Templates
 
-```html
+**`roles/webserver/templates/index.html.j2`**
 
-<h1>{{ app_name }}</h1>
-<p>Server: {{ ansible_hostname }}</p>
-<p>IP: {{ ansible_default_ipv4.address }}</p>
-<p>Environment: {{ app_env | default('development') }}</p>
-<p>Managed by Ansible</p>
+```text
+
+Welcome to {{ app_name }}
+Server: {{ ansible_hostname }}
+IP: {{ ansible_default_ipv4.address }}
+Environment: {{ app_env | default('development') }}
+Managed by Ansible
 
 ```
-*(Create the `vhost.conf.j2` and `nginx.conf.j2` templates yourself based on what you learned in Task 1).*
+
+**`roles/webserver/templates/vhost.conf.j2`**
+
+```jinja2
+
+server {
+    listen {{ http_port | default(80) }};
+    server_name {{ ansible_hostname }};
+
+    root /var/www/{{ app_name }};
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    access_log /var/log/nginx/{{ app_name }}_access.log;
+    error_log /var/log/nginx/{{ app_name }}_error.log;
+}
+
+```
+
+**`roles/webserver/templates/nginx.conf.j2`**
+
+```jinja2
+
+user www-data;
+worker_processes auto;
+pid /run/nginx.pid;
+include /etc/nginx/modules-enabled/*.conf;
+
+events {
+    worker_connections {{ max_connections | default(512) }};
+}
+
+http {
+    sendfile on;
+    tcp_nopush on;
+    types_hash_max_size 2048;
+    
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+    
+    access_log /var/log/nginx/access.log;
+    error_log /var/log/nginx/error.log;
+
+    include /etc/nginx/conf.d/*.conf;
+}
+
+```
 
 ### 5. Call the Role from Playbook (`site.yml`)
 
@@ -291,6 +345,11 @@ Run it:
 ansible-playbook -i inventory.ini site.yml
 
 ```
+
+<img width="3054" height="1986" alt="image" src="https://github.com/user-attachments/assets/1801067d-fd2e-4de1-ab40-88172cfc1717" />
+
+<img width="1300" height="418" alt="image" src="https://github.com/user-attachments/assets/e6708f27-9985-434f-9198-df8d446c762b" />
+
 
 **Verify:** Curl the web server to ensure the custom page loads correctly.
 
@@ -358,6 +417,9 @@ ansible-galaxy install -r requirements.yml
 
 ```
 
+<img width="2088" height="828" alt="image" src="https://github.com/user-attachments/assets/bf50aa69-ba7a-4061-9420-b255f4ec537b" />
+
+
 ### 🧠 Why use `requirements.yml`?
 
 It locks down exact version numbers across environments, ensures reproducible deployments, and allows automated build pipelines to pull required packages seamlessly without manual installation steps.
@@ -379,9 +441,9 @@ It will ask for a vault password, then open an editor. Add:
 
 ```yaml
 
-vault_db_password: SuperSecretP@ssw0rd
-vault_db_root_password: R00tP@ssw0rd123
-vault_api_key: sk-abc123xyz789
+vault_db_password: <Password>
+vault_db_root_password: <Password>
+vault_api_key: <Password>
 
 ```
 
@@ -403,10 +465,28 @@ ansible-vault view group_vars/db/vault.yml
 
 ### 4. Encrypt an existing file:
 
+First, create a normal, plain-text file to act as our existing file:
+
+```bash
+echo "backup_token: abc-123-xyz" > group_vars/db/secrets.yml
+
+```
+
+Then, encrypt that existing file (it will prompt you for a password):
+
 ```bash
 ansible-vault encrypt group_vars/db/secrets.yml
 
 ```
+
+You can verify it worked by reading the file. You will see an `$ANSIBLE_VAULT` header instead of the plain text:
+
+```bash
+cat group_vars/db/secrets.yml
+
+```
+<img width="1262" height="1228" alt="image" src="https://github.com/user-attachments/assets/596917ec-05ed-4e84-bb65-dd7e736db94d" />
+
 
 ### 5. Use vault variables in a playbook
 
@@ -432,15 +512,19 @@ ansible-playbook -i inventory.ini db-setup.yml --ask-vault-pass
 
 ```
 
+<img width="1954" height="634" alt="image" src="https://github.com/user-attachments/assets/06be5ee0-5599-4d38-b691-fcdd372ca1e5" />
+
+
 ### 6. Use a password file (better for CI/CD):
 
 ```bash
 echo "YourVaultPassword" > .vault_pass
 chmod 600 .vault_pass
 echo ".vault_pass" >> .gitignore
+```
 
+```
 ansible-playbook -i inventory.ini db-setup.yml --vault-password-file .vault_pass
-
 ```
 
 Or set it in `ansible.cfg`:
@@ -511,9 +595,10 @@ DB_ROOT_PASSWORD={{ vault_db_root_password }}
 Run the playbook:
 
 ```bash
-ansible-playbook -i inventory.ini site.yml
-
+ansible-playbook -i inventory.ini site.yml --ask-vault-pass
 ```
+
+<img width="3412" height="536" alt="image" src="https://github.com/user-attachments/assets/9e22ab6f-f202-4552-bc26-d8021d300944" />
 
 **Verify:** SSH into the db server and check `/etc/db-config.env`. Are the secrets rendered correctly? Is the file permission `600`?
 
