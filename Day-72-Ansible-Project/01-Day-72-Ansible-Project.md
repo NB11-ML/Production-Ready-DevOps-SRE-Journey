@@ -459,6 +459,8 @@ Execute the complete automation stack:
 ansible-playbook site.yml
 
 ```
+<img width="3038" height="1890" alt="image" src="https://github.com/user-attachments/assets/dbaafdb9-958d-4134-b05f-71e8d0ccf64f" />
+
 
 **Selective Execution via Tags**
 
@@ -471,6 +473,11 @@ ansible-playbook site.yml --tags docker
 ansible-playbook site.yml --tags nginx
 
 ```
+
+<img width="1642" height="1472" alt="image" src="https://github.com/user-attachments/assets/6b9637b0-f1e1-4f45-8533-34c42c944a92" />
+
+<img width="1714" height="988" alt="image" src="https://github.com/user-attachments/assets/fa43631e-484e-4a18-9e01-eb6805f075d2" />
+
 
 **Verification Commands on the Target Node**
 
