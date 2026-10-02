@@ -22,10 +22,32 @@ This runbook deploys the following infrastructure topology using an idempotent m
 
 ---
 
-## 🏗️ Project Directory Structure
+### 🏗️ Project Directory Structure
+
+You can quickly scaffold this exact professional directory layout using a combination of standard Linux commands for the top-level files and `ansible-galaxy` to automatically generate the role directories.
+
+**Run these commands to generate the workspace:**
+
+```bash
+# 1. Create the top-level project and variables directories
+mkdir -p ansible-docker-project/group_vars/web
+mkdir -p ansible-docker-project/roles
+cd ansible-docker-project
+
+# 2. Create the empty root configuration files
+touch ansible.cfg inventory.ini site.yml .vault_pass
+touch group_vars/all.yml group_vars/web/vars.yml
+
+# 3. Use Ansible Galaxy to automatically scaffold the role folders
+ansible-galaxy init roles/common
+ansible-galaxy init roles/docker
+ansible-galaxy init roles/nginx
+
+```
+
+**The resulting structure will look like this:**
 
 ```text
-
 ansible-docker-project/
 ├── ansible.cfg
 ├── inventory.ini
@@ -37,17 +59,17 @@ ansible-docker-project/
 │       ├── vars.yml
 │       └── vault.yml
 └── roles/
-    ├── common/
+    ├── common/          # (Scaffolded by Ansible Galaxy)
     │   └── tasks/
     │       └── main.yml
-    ├── docker/
+    ├── docker/          # (Scaffolded by Ansible Galaxy)
     │   ├── defaults/
     │   │   └── main.yml
     │   ├── handlers/
     │   │   └── main.yml
     │   └── tasks/
     │       └── main.yml
-    └── nginx/
+    └── nginx/           # (Scaffolded by Ansible Galaxy)
         ├── defaults/
         │   └── main.yml
         ├── handlers/
