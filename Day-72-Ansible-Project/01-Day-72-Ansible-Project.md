@@ -108,7 +108,6 @@ web-server ansible_host=10.0.1.167 ansible_user=ubuntu ansible_ssh_private_key_f
 **3. Global Variables (group_vars/all.yml)**
 
 ```yaml
-
 timezone: "Asia/Kolkata"
 project_name: "devops-app"
 app_env: "development"
@@ -121,6 +120,7 @@ common_packages:
   - tree
   - jq
   - unzip
+  - acl  # Required for Ansible to safely execute tasks as the unprivileged 'deploy' user
 
 ```
 
