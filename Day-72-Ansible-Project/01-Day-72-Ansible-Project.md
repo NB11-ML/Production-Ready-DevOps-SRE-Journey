@@ -494,6 +494,9 @@ curl http://localhost
 
 ```
 
+<img width="1886" height="1828" alt="image" src="https://github.com/user-attachments/assets/0da2a30a-dd24-454f-84d8-32351d6d4d40" />
+
+
 ## 📊 Project Reflection & Concept Breakdown
 
 This project bridges 11 years of infrastructure engineering experience with modern SRE practices by combining the following automation concepts:
