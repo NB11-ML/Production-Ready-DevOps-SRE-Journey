@@ -71,6 +71,7 @@ scrape_configs:
     static_configs:
       - targets: ["localhost:9090"]
 
+
 ```
 
 ### 3. Deploy via Docker Compose (`docker-compose.yml`)
@@ -93,8 +94,13 @@ volumes:
   prometheus_data:
 
 ```
+<img width="2326" height="312" alt="image" src="https://github.com/user-attachments/assets/4574c816-e34a-40ab-bdca-f6002e56a936" />
+
 
 Launch the stack using `docker compose up -d` and navigate to `http://localhost:9090`. In the UI, navigate to **Status > Targets** to verify the `prometheus` job is in the **UP** state.
+
+<img width="1602" height="784" alt="image" src="https://github.com/user-attachments/assets/a99e7778-20d4-4fbc-8468-f44172b86dd7" />
+
 
 ## 📌 Task 3: Core Prometheus Concepts
 
@@ -130,6 +136,8 @@ prometheus_http_requests_total
 
 ```
 
+<img width="1594" height="1492" alt="image" src="https://github.com/user-attachments/assets/46b96f9b-7a8c-4282-a3fc-30ca8e9f3236" />
+
 
 3. **Filter by specific labels:**
 ```promql
@@ -137,14 +145,14 @@ prometheus_http_requests_total{handler="/api/v1/query"}
 
 ```
 
+<img width="1602" height="752" alt="image" src="https://github.com/user-attachments/assets/1b4bdcbe-1dfc-4375-b77d-d5fbf7b4a2a2" />
 
 4. **Convert bytes to Megabytes (Arithmetic):**
 ```promql
 process_resident_memory_bytes / 1024 / 1024
 
 ```
-
-
+<img width="1600" height="738" alt="image" src="https://github.com/user-attachments/assets/b18d6a73-f03a-46aa-ba94-d50c3c0dc256" />
 
 **🔥 Exercise:** *Show the per-second rate of non-200 HTTP requests over the last 5 minutes.*
 
@@ -152,6 +160,7 @@ process_resident_memory_bytes / 1024 / 1024
 rate(prometheus_http_requests_total{code!="200"}[5m])
 
 ```
+<img width="1604" height="662" alt="image" src="https://github.com/user-attachments/assets/24bc5b35-2173-4a7b-86ec-3fb9e6c2bcd5" />
 
 *(Note: `rate()` calculates the per-second average of a counter over a specified time window, converting constantly rising numbers into a readable "speed" metric).*
 
@@ -175,11 +184,11 @@ services:
       - '--config.file=/etc/prometheus/prometheus.yml'
     restart: unless-stopped
 
-  notes-app:
-    image: trainwithshubham/notes-app:latest
-    container_name: notes-app
+  sample-app:
+    image: prom/node-exporter:latest
+    container_name: sample-app
     ports:
-      - "8000:8000"
+      - "9100:9100"
     restart: unless-stopped
 
 volumes:
@@ -199,13 +208,15 @@ scrape_configs:
     static_configs:
       - targets: ["localhost:9090"]
 
-  - job_name: "notes-app"
+  - job_name: "sample-app"
     static_configs:
-      - targets: ["notes-app:8000"]
+      - targets: ["sample-app:9100"]
 
 ```
 
-Restart the stack with `docker compose up -d`. Generate some fake traffic by running `curl http://localhost:8000` a few times in your terminal, then check your Prometheus Targets page to see both endpoints active.
+<img width="1586" height="1026" alt="image" src="https://github.com/user-attachments/assets/3ce0402d-b4fa-4446-8928-8edd3de971d6" />
+
+Restart the stack with `docker compose up -d`. Generate some fake traffic by running `curl http://localhost:9100` a few times in your terminal, then check your Prometheus Targets page to see both endpoints active.
 
 ## 📌 Task 6: Data Retention and Storage
 
