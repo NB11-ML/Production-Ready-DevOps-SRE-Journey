@@ -22,8 +22,68 @@ OpenTelemetry (OTEL) is the industry-standard, vendor-neutral framework for gene
 * Each hop in the journey is called a **span**.
 * Spans contain vital debugging context: Trace ID, Span ID, start time, duration, and custom attributes (e.g., HTTP status codes).
 
+## Setting up the Configuration Files 
 
+To successfully implement Prometheus alerting, we first need to configure Prometheus to look for our upcoming alert rules and ensure our containers are mounted correctly.
 
+### 1. `prometheus.yml`
+This file configures the global scrape intervals and points to our rule file. 
+
+Create or update `prometheus.yml` in your project directory:
+
+```yaml
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "/etc/prometheus/alert-rules.yml"
+
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: "node-exporter"
+    static_configs:
+      - targets: ["node-exporter:9100"]
+
+  - job_name: "cadvisor"
+    static_configs:
+      - targets: ["cadvisor:8080"]
+
+  - job_name: "otel-collector"
+    static_configs:
+      - targets: ["otel-collector:8889"]
+
+```
+
+### 2. `docker-compose.yml` Updates
+
+Update your `docker-compose.yml` file to ensure the Prometheus container has access to the rule file, and add a lightweight `test-app` service to safely test our alerts later.
+
+```yaml
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./alert-rules.yml:/etc/prometheus/alert-rules.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+
+  # Dummy application specifically used to test alerts safely
+  test-app:
+    image: nginx:alpine
+    container_name: test-app
+    ports:
+      - "8081:80"
+    restart: unless-stopped
+
+```
 ---
 
 ## 📌 Task 2: Add the OpenTelemetry Collector
@@ -186,14 +246,14 @@ groups:
           description: "Memory usage is above 85%. Current value: {{ $value }}%"
 
       - alert: ContainerDown
-        expr: absent(container_last_seen{name="notes-app"})
+        expr: absent(container_last_seen{name="test-app"})
         for: 1m
         labels:
           severity: critical
         annotations:
           summary: "Container is down"
-          description: "The notes-app container has not been seen for over 1 minute"
-
+          description: "The test-app container has not been seen for over 1 minute"
+     
       - alert: TargetDown
         expr: up == 0
         for: 1m
@@ -201,7 +261,7 @@ groups:
           severity: critical
         annotations:
           summary: "Scrape target is down"
-          description: "{{ \(labels.job }} target {{\)labels.instance }} is unreachable"
+          description: "{{ $labels.job }} target {{ $labels.instance }} is unreachable"
 
       - alert: HighDiskUsage
         expr: (1 - node_filesystem_avail_bytes{mountpoint="/var/lib"} / node_filesystem_size_bytes{mountpoint="/var/lib"}) * 100 > 90
@@ -274,6 +334,11 @@ While Prometheus evaluates the raw metrics, Grafana provides a highly robust ale
 * Condition: `IS ABOVE 100`
 * Evaluation: `every 1m`, `for 2m`.
 * Link it to the `DevOps Team` contact point and Save.
+
+<img width="2610" height="1282" alt="image" src="https://github.com/user-attachments/assets/82927c5a-a543-4613-a2a8-c10173b4b5b5" />
+
+<img width="2622" height="1310" alt="image" src="https://github.com/user-attachments/assets/cc602815-13d2-479b-8ae7-faae24db5c39" />
+
 
 **Prometheus Alerts vs. Grafana Alerts:**
 
