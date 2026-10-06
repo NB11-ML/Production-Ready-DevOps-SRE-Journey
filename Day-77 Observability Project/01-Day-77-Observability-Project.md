@@ -192,32 +192,43 @@ docker logs otel-collector --tail 30
 
 Create a new dashboard in Grafana named **"Production Overview -- Observability Stack"** organized into 4 distinct rows:
 
-* **Row 1 — System Health (Prometheus + Node Exporter):**
-* CPU Usage (Gauge): `100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)`
-* Memory Usage (Gauge): `(1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100`
-* Disk Usage (Gauge): `(1 - (sum(node_filesystem_avail_bytes) / sum(node_filesystem_size_bytes))) * 100`
-* Targets Up (Stat): `sum(up) / count(up)`
+### Row 1 — System Health (Prometheus + Node Exporter)
+
+| Panel Name | Panel Type | Query |
+| --- | --- | --- |
+| **CPU Usage** | Gauge | `100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)` |
+| **Memory Usage** | Gauge | `(1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100` |
+| **Disk Usage** | Gauge | `(1 - (sum(node_filesystem_avail_bytes) / sum(node_filesystem_size_bytes))) * 100` |
+| **Targets Up** | Stat | `sum(up) / count(up)` |
 
 <img width="3332" height="1516" alt="image" src="https://github.com/user-attachments/assets/b568b409-48dc-4658-ab70-3a7c5c5d8b9f" />
 
 
-* **Row 2 — Container Metrics (cAdvisor):**
-* Container CPU (Time Series): `rate(container_cpu_usage_seconds_total[5m]) * 100`
-* Container Memory (Bar Chart): `container_memory_usage_bytes / 1024 / 1024`
-* Active Container Count (Stat): `count(container_last_seen)`
+### Row 2 — Container Metrics (cAdvisor)
+
+| Panel Name | Panel Type | Query |
+| --- | --- | --- |
+| **Container CPU** | Time Series | `rate(container_cpu_usage_seconds_total[5m]) * 100` |
+| **Container Memory** | Bar Chart | `container_memory_usage_bytes / 1024 / 1024` |
+| **Active Container Count** | Stat | `count(container_last_seen)` |
 
 <img width="3334" height="1602" alt="image" src="https://github.com/user-attachments/assets/4ec9ec5a-9ea5-450d-ad21-8445c3169df7" />
 
+### Row 3 — Application Logs (Loki / LogQL)
 
-* **Row 3 — Application Logs (Loki / LogQL):**
-* App Logs Stream (Logs Panel): `{job="docker"} |= "notes-app"`
-* Error Rate (Time Series): `sum(rate({job="docker"} |= "error" [5m]))`
+| Panel Name | Panel Type | Query |
+| --- | --- | --- |
+| **App Logs Stream** | Logs | `{job="docker"}` |
+| **Error Rate** | Time Series | `sum(rate({job="docker"}` |
 
 <img width="3312" height="1080" alt="image" src="https://github.com/user-attachments/assets/95ab87d1-cd27-4152-8d75-9e33071bb961" />
 
 
-* **Row 4 — Service Overview:**
-* Prometheus Scrape Duration (Time Series): `prometheus_target_interval_length_seconds{quantile="0.99"}`
+### Row 4 — Service Overview
+
+| Panel Name | Panel Type | Query |
+| --- | --- | --- |
+| **Prometheus Scrape Duration** | Time Series | `prometheus_target_interval_length_seconds{quantile="0.99"}` |
 
 <img width="3420" height="1148" alt="image" src="https://github.com/user-attachments/assets/8da2f2f5-61ad-4bd9-b240-a4ecc665d9f6" />
 
