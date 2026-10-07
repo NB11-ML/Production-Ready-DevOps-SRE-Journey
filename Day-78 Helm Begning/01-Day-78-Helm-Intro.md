@@ -1,0 +1,242 @@
+# Day 78: Introduction to Helm and Chart Basics
+
+Today marks an important milestone in our Kubernetes journey. Moving away from managing scattered raw manifests, we dive into **Helm**—the package manager for Kubernetes. We explore core concepts, install Helm, deploy the MySQL dependency for the AI-BankApp using public charts, customize configurations with values files, manage release revisions, and examine the inner structure of a Helm chart.
+
+---
+
+## 🏗️ 1. Core Helm Concepts
+
+When deploying applications to Kubernetes, managing dozens of individual YAML files across different environments (dev, staging, production) quickly becomes unmaintainable. Helm solves this by packaging manifests into reusable, versioned units.
+
+* **Chart:** A collection of files that describe a related set of Kubernetes resources (e.g., a Deployment, Service, ConfigMap, and Secret combined into a single distributable package).
+* **Release:** A running instance of a chart deployed inside a Kubernetes cluster. You can install the same chart multiple times in the same cluster with different release names (e.g., `bankapp-mysql-dev`, `bankapp-mysql-prod`).
+* **Repository:** A centralized server or storage bucket where charts are stored, shared, and hosted (similar to Docker Hub for container images).
+* **Values:** A set of configuration parameters (`values.yaml`) used to customize a chart during installation or upgrade (e.g., replicas, image tags, resource limits, and storage sizes).
+
+### Why Helm Over Raw Manifests?
+Looking at the AI-BankApp's `k8s/` directory, there are **12 separate YAML files** (`bankapp-deployment.yml`, `secrets.yml`, `service.yml`, `pvc.yml`, etc.) with hardcoded values. To change an image tag or switch environments, you have to manually edit files or maintain duplicate branches. Helm eliminates this friction through:
+1. **Templating:** One parameterized chart can serve multiple environments with different value configurations.
+2. **Versioning & Rollbacks:** Charts track revisions natively, allowing you to rollback safely with a single command if an upgrade fails.
+3. **Dependency Management:** Charts can declare dependencies on other charts (e.g., your application chart can bundle or pull in a MySQL chart automatically).
+4. **Ecosystem & Community:** Access to thousands of production-ready charts maintained by the community and vendors (Bitnami, Prometheus, ArgoCD, etc.).
+
+---
+
+## 🚀 2. Setting Up the Environment & Installing Helm
+
+### Step 1: Clone the AI-BankApp Repository & Setup Kind Cluster
+Clone the repository to access the setup configuration and explore the raw manifests:
+```bash
+git clone -b feat/gitops [https://github.com/TrainWithShubham/AI-BankApp-DevOps.git](https://github.com/TrainWithShubham/AI-BankApp-DevOps.git)
+cd AI-BankApp-DevOps
+
+# Create a local multi-node Kind cluster (1 control plane, 2 worker nodes)
+kind create cluster --config setup-k8s/kind-config.yml
+
+```
+
+### Step 2: Install Helm
+
+Install Helm using Homebrew (macOS) or the official install script (Linux):
+
+```bash
+# macOS
+brew install helm
+
+# Linux (official script)
+curl [https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3](https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3) | bash
+
+# Verify installation and cluster connectivity
+helm version
+kubectl cluster-info
+helm list
+
+```
+
+### Step 3: Explore the Raw Manifests
+
+Inspect the `k8s/` directory to see the 12 raw files we will eventually convert into a unified Helm chart:
+
+```bash
+ls k8s/
+# bankapp-deployment.yml   configmap.yml   gateway.yml   mysql-deployment.yml
+# namespace.yml   ollama-deployment.yml   pv.yml   pvc.yml   secrets.yml
+# service.yml   hpa.yml   cert-manager.yml
+
+```
+
+---
+
+## 🐬 3. Deploying MySQL Using a Bitnami Helm Chart
+
+Instead of manually applying `mysql-deployment.yml`, `secrets.yml`, `pvc.yml`, `pv.yml`, and `service.yml`, Helm provisions and wires all of these resources together atomically.
+
+1. **Add and update the Bitnami chart repository:**
+```bash
+helm repo add bitnami [https://charts.bitnami.com/bitnami](https://charts.bitnami.com/bitnami)
+helm repo update
+
+```
+
+<img width="1808" height="398" alt="image" src="https://github.com/user-attachments/assets/74ac5a66-7b77-4c44-a3d7-1205080e1a78" />
+
+
+2. **Deploy MySQL with command-line overrides (`--set`):**
+```bash
+helm install bankapp-mysql bitnami/mysql \
+  --set auth.rootPassword=Test@123 \
+  --set auth.database=bankappdb \
+  --set image.repository=bitnamilegacy/mysql \
+  --set primary.resources.requests.memory=256Mi \
+  --set primary.resources.requests.cpu=250m \
+  --set primary.resources.limits.memory=512Mi \
+  --set primary.resources.limits.cpu=500m \
+  --set primary.persistence.size=5Gi
+
+```
+
+<img width="1680" height="800" alt="image" src="https://github.com/user-attachments/assets/59d36f30-e435-4244-b33b-9c37c8941452" />
+
+
+3. **Verify the deployed release and underlying resources:**
+```bash
+helm list
+kubectl get all -l app.kubernetes.io/instance=bankapp-mysql
+kubectl get pvc -l app.kubernetes.io/instance=bankapp-mysql
+kubectl get secret -l app.kubernetes.io/instance=bankapp-mysql
+
+```
+<img width="2546" height="954" alt="image" src="https://github.com/user-attachments/assets/2fe06fc5-566f-4e9c-a48d-731ca061cab5" />
+
+4. **Test database connectivity inside the container:**
+```bash
+kubectl exec -it bankapp-mysql-0 -- mysql -uroot -pTest@123 -e "SHOW DATABASES;"
+
+```
+
+<img width="2412" height="580" alt="image" src="https://github.com/user-attachments/assets/48573ad3-5db6-4840-a3cc-176e04631153" />
+
+*(You should see `bankappdb` listed in the output).*
+
+---
+
+## ⚙️ 4. Customizing Deployments with Values Files
+
+While `--set` is convenient for quick testing, production workflows use dedicated `values.yaml` files for version control and repeatability.
+
+Create a custom configuration file named `mysql-values.yaml`:
+
+```yaml
+image:
+  repository: bitnamilegacy/mysql
+  tag: 8.0.36-debian-11-r0
+
+auth:
+  rootPassword: Test@123
+  database: bankappdb
+
+primary:
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  persistence:
+    size: 5Gi
+    storageClass: ""
+
+metrics:
+  enabled: false
+
+```
+
+Deploy using the values file and clean up the temporary release:
+
+```bash
+helm install bankapp-mysql-v2 bitnami/mysql -f mysql-values.yaml
+
+# Inspect all available configurable chart parameters for reference
+helm show values bitnami/mysql | head -80
+
+# Clean up the second release
+helm uninstall bankapp-mysql-v2
+
+```
+
+<img width="1692" height="620" alt="image" src="https://github.com/user-attachments/assets/8a137a86-90e9-40fe-b32a-35dd00529c18" />
+<img width="3184" height="1088" alt="image" src="https://github.com/user-attachments/assets/7ad88c36-b991-4cfa-904f-26f89b22f870" />
+
+
+---
+
+## 🔄 5. Managing Releases — Upgrade, Rollback, & History
+
+Helm tracks every modification as an immutable revision, giving you native rollback capabilities that raw `kubectl apply` lacks.
+
+1. **Upgrade the MySQL release to enable metrics:**
+```bash
+helm upgrade bankapp-mysql-v2 bitnami/mysql \
+  -f mysql-values.yml \
+  --set auth.rootPassword=NewTest@123
+
+```
+
+<img width="2164" height="1438" alt="image" src="https://github.com/user-attachments/assets/7e2ed582-f304-4631-9875-2a393a20992d" />
+
+2. **Inspect revision history:**
+```bash
+helm history bankapp-mysql
+
+```
+
+
+3. **Rollback to Revision 1:**
+```bash
+helm rollback bankapp-mysql 1
+helm history bankapp-mysql
+
+```
+
+
+
+---
+
+## 📂 6. Exploring a Chart's Structure
+
+To understand how to build our own chart for the AI-BankApp, let's inspect the local structure of the pulled MySQL chart:
+
+```bash
+helm pull bitnami/mysql --untar
+ls mysql/
+
+```
+
+### Chart Directory Layout:
+
+* `Chart.yaml`: Contains metadata about the chart (name, description, version, appVersion).
+* `values.yaml`: Default configuration values provided out-of-the-box.
+* `charts/`: Directory containing any subchart dependencies.
+* `templates/`: Kubernetes manifest templates written in Go template syntax (`statefulset.yaml`, `svc.yaml`, etc.).
+* `_helpers.tpl`: Reusable template snippet helpers.
+* `NOTES.txt`: Post-installation instructions rendered to the user terminal.
+
+### `Chart.yaml` Metadata Breakdown:
+
+* `version`: The version number of the **Helm chart itself** (incremented whenever chart templates or structures change).
+* `appVersion`: The version of the **underlying software application** packaged inside the chart (e.g., MySQL `8.0.40`).
+
+---
+
+## 📊 Summary: Raw YAML vs. Helm Chart Approach
+
+| Aspect | AI-BankApp Raw Manifests (`k8s/`) | Bitnami MySQL Helm Chart |
+| --- | --- | --- |
+| **Secrets Management** | Hardcoded base64 strings in `secrets.yml` | Dynamically generated and managed by Helm |
+| **Storage Provisioning** | Manual PV and PVC YAML definitions | Configured declaratively via `persistence.size` |
+| **Replication & Scaling** | Static replica counts in deployment files | Parameterized via `primary.replicaCount` |
+| **Observability / Metrics** | Requires manual ConfigMaps and sidecars | Enabled instantly via `metrics.enabled: true` |
+| **Rollback Mechanism** | Manual Git reverts or re-applying old YAML | Native `helm rollback <release> <revision>` |
+
+---
