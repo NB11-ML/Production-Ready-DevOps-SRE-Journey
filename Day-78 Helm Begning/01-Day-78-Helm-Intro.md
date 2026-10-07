@@ -213,6 +213,8 @@ helm pull bitnami/mysql --untar
 ls mysql/
 
 ```
+<img width="2080" height="428" alt="image" src="https://github.com/user-attachments/assets/8c3e79bb-ebb4-4382-8cdc-4ea5b564a422" />
+
 
 ### Chart Directory Layout:
 
