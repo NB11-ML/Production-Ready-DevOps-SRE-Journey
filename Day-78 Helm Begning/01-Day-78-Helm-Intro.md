@@ -21,6 +21,10 @@ Looking at the AI-BankApp's `k8s/` directory, there are **12 separate YAML files
 4. **Ecosystem & Community:** Access to thousands of production-ready charts maintained by the community and vendors (Bitnami, Prometheus, ArgoCD, etc.).
 
 ---
+## Kubernetes Cluster Architecture
+
+![Kubernetes Architecture](images/kubernetes-cluster-architecture.png)
+---
 
 ## 🚀 2. Setting Up the Environment & Installing Helm
 
