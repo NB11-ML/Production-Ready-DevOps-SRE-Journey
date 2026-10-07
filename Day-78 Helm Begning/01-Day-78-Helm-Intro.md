@@ -190,6 +190,7 @@ helm upgrade bankapp-mysql-v2 bitnami/mysql \
 helm history bankapp-mysql
 
 ```
+<img width="2086" height="356" alt="image" src="https://github.com/user-attachments/assets/5d0d96cc-4c48-4ba7-9741-0ad89d881d36" />
 
 
 3. **Rollback to Revision 1:**
@@ -199,7 +200,7 @@ helm history bankapp-mysql
 
 ```
 
-
+<img width="2062" height="920" alt="image" src="https://github.com/user-attachments/assets/6a47e7d0-5537-4019-8ccb-4daf49752450" />
 
 ---
 
