@@ -147,8 +147,8 @@ type: application
 version: 0.1.0
 appVersion: "1.0.0"
 maintainers:
-  - name: TrainWithShubham
-    url: [https://github.com/TrainWithShubham](https://github.com/TrainWithShubham)
+  - name: NB11-ML
+    url: https://github.com/NB11-ML/Production-Ready-DevOps-SRE-Journey
 keywords:
   - bankapp
   - spring-boot
@@ -252,10 +252,9 @@ gateway:
 
 ### Task 3: Write the Core Templates
 
-Convert the raw manifests into Helm templates using `{{ .Values }}`.
+Convert the raw manifests into Helm templates. Each template uses `{{ .Values }}` instead of hardcoded values.
 
 `bankapp/templates/configmap.yaml` (from `k8s/configmap.yml`):
-
 ```yaml
 apiVersion: v1
 kind: ConfigMap
@@ -291,7 +290,21 @@ data:
 
 ```
 
-*Notice: `b64enc` automatically base64 encodes the values. No more manual encoding.*
+**Deep Dive: How Helm Handles Secrets**
+Helm completely ignores the old `k8s/secrets.yml` file. Instead, it acts as a translation engine that bridges your `values.yaml` file and the Kubernetes cluster dynamically:
+
+1. **Fetch:** Helm reads `values.yaml` and grabs the plain-text string (e.g., `Test@123`).
+2. **Encode:** It pushes that string through the pipe (`|`) into the `b64enc` function, instantly converting it into a Base64 string in memory (e.g., `VGVzdEAxMjM=`).
+3. **Quote:** It wraps the result in quotes to ensure valid YAML formatting.
+4. **Inject:** Helm sends the fully encoded Secret directly to the Kubernetes API without ever saving the Base64 string to a local file.
+
+**🚨 Production Security Note:**
+For this local learning lab, putting plain-text passwords in `values.yaml` is safe and eliminates manual Base64 encoding. However, **in a real production environment, committing plain-text passwords to a Git repository is a major security violation.**
+
+Site Reliability Engineers handle real-world Helm secrets by:
+
+* **CI/CD Injection:** Leaving passwords blank in `values.yaml` and injecting them dynamically at runtime via a secure pipeline (e.g., `helm install --set secrets.mysqlRootPassword=$HIDDEN_PIPELINE_VARIABLE`).
+* **External Secret Managers:** Using tools like AWS Secrets Manager, HashiCorp Vault, or the External Secrets Operator to fetch passwords securely at runtime, ensuring they never touch a GitHub repository or a Helm chart.
 
 `bankapp/templates/storage.yaml` (from `k8s/pv.yml` + `k8s/pvc.yml`):
 
@@ -646,6 +659,36 @@ spec:
 
 ```
 
+### Task 5.5: Customize NOTES.txt (Fixing Lint Errors)
+
+When you run `helm create`, Helm generates a default `NOTES.txt` file that tries to read routing configurations (like `ingress` or `httpRoute`). Since we removed those from our custom `values.yaml`, leaving the default file will cause a `nil pointer` error during `helm lint`.
+
+Update `bankapp/templates/NOTES.txt` to provide specific, dynamic instructions for our AI-BankApp:
+
+```text
+Thank you for installing {{ .Chart.Name }}.
+
+Your release is named {{ .Release.Name }} and is deployed in the {{ .Release.Namespace }} namespace.
+
+🚀 To access the AI-BankApp frontend:
+  1. Wait for all pods to be in the 'Running' state:
+     kubectl get pods --namespace {{ .Release.Namespace }} -w
+
+  2. Port-forward the bankapp service to your local machine:
+     kubectl port-forward svc/{{ include "bankapp.fullname" . }}-service --namespace {{ .Release.Namespace }} 8080:8080
+
+  3. Open your browser and visit:
+     http://localhost:8080
+
+{{- if .Values.mysql.enabled }}
+🐬 MySQL is enabled and running internally.
+{{- end }}
+
+{{- if .Values.ollama.enabled }}
+🤖 Ollama AI Chatbot is enabled. Note: It may take a few minutes for the container to pull the {{ .Values.ollama.model }} model before becoming ready.
+{{- end }}
+
+```
 ---
 
 ### Task 6: Validate and Deploy
@@ -663,6 +706,8 @@ Render templates locally (see the final YAML without deploying):
 helm template my-bankapp bankapp/
 
 ```
+<img width="1854" height="1226" alt="image" src="https://github.com/user-attachments/assets/f261c339-61ae-42c4-9a9d-3c881665b78a" />
+
 
 *(Review the output. Every `{{ }}` should be resolved to actual values).*
 
@@ -676,6 +721,9 @@ helm template my-bankapp bankapp/ \
 
 ```
 
+<img width="1808" height="1154" alt="image" src="https://github.com/user-attachments/assets/f9386b4e-8d15-48b4-aef4-84ba66557aaf" />
+
+
 *Notice: setting `ollama.enabled=false` removes the Ollama Deployment, Service, PVC, and the init container from the BankApp. One boolean controls an entire component.*
 
 Dry run against the cluster:
@@ -684,6 +732,8 @@ Dry run against the cluster:
 helm install my-bankapp bankapp/ --dry-run --debug -n bankapp --create-namespace
 
 ```
+<img width="1804" height="1234" alt="image" src="https://github.com/user-attachments/assets/864403b4-7ef4-463f-a173-a4cf95b150eb" />
+
 
 Deploy for real (on Kind — skip StorageClass creation since Kind uses its own):
 
@@ -695,6 +745,8 @@ helm install my-bankapp bankapp/ \
   --set ollama.persistence.storageClass=standard
 
 ```
+<img width="2474" height="1186" alt="image" src="https://github.com/user-attachments/assets/6094e62c-2190-4e38-af26-b4e088f0004e" />
+
 
 Verify:
 
@@ -706,6 +758,9 @@ kubectl get configmap,secret -n bankapp
 
 ```
 
+<img width="3010" height="1588" alt="image" src="https://github.com/user-attachments/assets/627b0111-9a97-420e-9b15-043304eb0de8" />
+
+
 Wait for all pods to be ready (Ollama takes time to pull the model):
 
 ```bash
@@ -713,12 +768,18 @@ kubectl get pods -n bankapp -w
 
 ```
 
+<img width="1694" height="414" alt="image" src="https://github.com/user-attachments/assets/e2733071-f465-426c-b881-ae37713f84da" />
+
+
 Access the app:
 
 ```bash
-kubectl port-forward svc/my-bankapp-bankapp-service -n bankapp 8080:8080
+kubectl port-forward svc/my-bankapp-service -n bankapp 8080:8080
 
 ```
+
+<img width="1862" height="528" alt="image" src="https://github.com/user-attachments/assets/53c7c7a5-4cc3-49de-a028-d4fbbcc54257" />
+
 
 *(Open http://localhost:8080 — you should see the AI-BankApp login page. Compare: 12 raw YAML files vs 1 Helm command. Same result, but now configurable, versionable, and rollback-safe).*
 
@@ -728,8 +789,58 @@ Clean up:
 helm uninstall my-bankapp -n bankapp
 
 ```
+<img width="1618" height="1880" alt="image" src="https://github.com/user-attachments/assets/c6cd964b-84cf-4435-9d33-f6dcc364f608" />
+
 
 ---
+
+### 🛠️ Troubleshooting & SRE Notes: Handling ARM64 Architecture Mismatches
+
+If you are running a local Kubernetes cluster (like KinD or Minikube) on an Apple Silicon Mac (M1/M2/M3) or any ARM64 architecture, you will likely encounter an `ErrImagePull` or `ImagePullBackOff` error when Helm tries to pull the default `trainwithshubham/ai-bankapp-eks:latest` image.
+
+Checking the pod events (`kubectl describe pod <pod-name>`) will reveal:
+`failed to pull and unpack image... no match for platform in manifest: not found`
+
+**The Fix: Build and Load a Local Image**
+Instead of relying on the AMD64 image from Docker Hub, compile it locally for your specific hardware and load it directly into your cluster.
+
+1. **Build the image locally:**
+Navigate to the root of the application directory (where the `Dockerfile` is) and build it:
+```bash
+docker build -t my-local-bankapp:latest .
+
+```
+
+
+2. **Load the image into your KinD cluster:**
+Push the locally built image directly into the cluster's nodes (replace `tws-cluster` with your actual KinD cluster name):
+```bash
+kind load docker-image my-local-bankapp:latest --name tws-cluster
+
+```
+
+
+3. **Update your Helm `values.yaml`:**
+Tell Helm to use this new local image and to *stop* trying to download it from the internet by setting the `pullPolicy` to `IfNotPresent`:
+```yaml
+bankapp:
+  image:
+    repository: my-local-bankapp
+    tag: "latest"
+    pullPolicy: IfNotPresent
+
+```
+
+
+4. **Push the fix to the cluster:**
+Run a quick Helm upgrade to apply the new values:
+```bash
+helm upgrade my-bankapp bankapp/ -n bankapp
+
+```
+
+---
+
 
 ## Hints
 
