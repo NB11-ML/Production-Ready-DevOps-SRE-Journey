@@ -6,17 +6,8 @@ Yesterday you deployed MySQL with a community Helm chart. Today you build a cust
 
 The AI-BankApp has three services: the Spring Boot banking app, a MySQL database, and an Ollama AI chatbot. By the end of today, all of this will be deployable with a single `helm install` command.
 
-## Expected Output
-
-* A custom Helm chart that deploys the entire AI-BankApp stack
-* Templates for Deployments, Services, ConfigMap, Secrets, PVCs, and HPA
-* Init containers and lifecycle hooks preserved from the original manifests
-* Chart validated with `helm lint` and `helm template`
-* A markdown file: `day-79-custom-charts.md`
 
 ---
-
-## Challenge Tasks
 
 ### Task 1: Scaffold the Chart and Study the Raw Manifests
 
