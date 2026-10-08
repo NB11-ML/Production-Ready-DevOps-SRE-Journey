@@ -121,12 +121,15 @@ helm create bankapp
 
 ```
 
+<img width="1810" height="814" alt="image" src="https://github.com/user-attachments/assets/606a3674-dd43-42ec-aceb-bc6954fd5855" />
+
 Delete the generated template files (you will write your own from the raw manifests):
 
 ```bash
 rm -rf bankapp/templates/*.yaml bankapp/templates/tests/
 
 ```
+<img width="1792" height="522" alt="image" src="https://github.com/user-attachments/assets/ec18fbf7-4677-46f7-990c-cf5fa066b7bb" />
 
 *(Keep `_helpers.tpl` and `NOTES.txt` — you will customize them).*
 
@@ -241,6 +244,7 @@ gateway:
     enabled: false
 
 ```
+<img width="1802" height="528" alt="image" src="https://github.com/user-attachments/assets/04f1c60d-a6bd-41a0-ab0b-3fdaec2e0861" />
 
 *Compare: The raw `k8s/secrets.yml` has base64-encoded credentials hardcoded. The Helm chart uses `values.yaml` and templates the Secret, so each environment can override credentials without editing YAML.*
 
