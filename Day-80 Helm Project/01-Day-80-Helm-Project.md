@@ -333,8 +333,7 @@ helm repo index chart-repo/ --url [https://your-username.github.io/helm-charts](
 cat chart-repo/index.yaml
 
 ```
-
-
+<img width="3036" height="1948" alt="image" src="https://github.com/user-attachments/assets/e4495d54-ff13-4bd5-84a3-8cc08790dd3b" />
 
 ---
 
