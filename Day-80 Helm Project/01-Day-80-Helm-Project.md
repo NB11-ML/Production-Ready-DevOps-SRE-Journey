@@ -272,9 +272,11 @@ spec:
 Run test validation post-deployment:
 
 ```bash
-helm test bankapp-dev -n dev
-
+helm test bankapp-dev -n dev --logs
 ```
+
+
+<img width="2544" height="1086" alt="image" src="https://github.com/user-attachments/assets/68ddace2-d818-43b2-b021-0f38c53b2979" />
 
 ---
 
@@ -286,31 +288,41 @@ helm lint bankapp/
 helm package bankapp/
 
 ```
+<img width="2672" height="504" alt="image" src="https://github.com/user-attachments/assets/92389e3c-cb99-4378-ab68-9c78f2bb7d82" />
 
 
 *(This initially generates `bankapp-0.1.0.tgz`)*
+
 2. **Bump Versions in `Chart.yaml`:**
+
 After modifying structure or adding hooks, update versions:
+
 ```yaml
 version: 0.2.0        # Chart structure changed (added hooks)
 appVersion: "1.1.0"    # App version updated
 
 ```
-
-
 3. **Re-package:**
 ```bash
 helm package bankapp/
 
 ```
+<img width="2622" height="456" alt="image" src="https://github.com/user-attachments/assets/b886b745-2872-4e6e-a99d-3df9ca3047f1" />
 
+<img width="1538" height="376" alt="image" src="https://github.com/user-attachments/assets/2f5f6418-6a57-4a34-96cb-b2463a0135eb" />
 
 *(Now you have both `bankapp-0.1.0.tgz` and `bankapp-0.2.0.tgz`)*
+
 4. **Install Directly from the Packaged Archive:**
+   
 ```bash
 helm install my-bankapp bankapp-0.2.0.tgz -f bankapp/values-dev.yaml -n bankapp --create-namespace
 
 ```
+<img width="2352" height="618" alt="image" src="https://github.com/user-attachments/assets/988e1ddd-db40-45bb-a8f8-5cc6259081cd" />
+
+
+<img width="1704" height="1412" alt="image" src="https://github.com/user-attachments/assets/e21b225a-7d8c-425c-a966-31ab4f2eec20" />
 
 
 5. **Create Chart Repository Index (for GitHub Pages distribution):**
@@ -400,6 +412,41 @@ Verify deployments cluster-wide:
 helm list -A
 
 ```
+## Troubleshooting & Post-Mortem: Day 80 Helm Deployment
+
+**1. Helm Pre-Install Hook Deadlock**
+
+* **Symptom:** Running `helm install` caused the terminal to hang indefinitely. No services, deployments, or PVCs were created in the namespace.
+* **Root Cause:** The `pre-install-job.yaml` utilized a `"helm.sh/hook": pre-install` annotation. This hook instructed Helm to wait for the job to complete *before* creating any other resources. However, the job contained a script (`nc -z`) waiting for the MySQL service to become available, creating a deadlock (the job waited for the service, but the service couldn't be created until the job finished).
+* **Resolution:** Removed the `pre-install` hook annotation, allowing standard Kubernetes container initialization and init-containers to manage the startup sequence organically.
+
+**2. MySQL OOMKilled & CrashLoopBackOff**
+
+* **Symptom:** The `bankapp-dev-mysql` pod repeatedly crashed immediately upon startup, throwing an `OOMKilled` status code followed by `CrashLoopBackOff`.
+* **Root Cause:** MySQL requires sufficient memory overhead to allocate its InnoDB buffer pool during initialization. The container was strictly limited to `256Mi` of RAM.
+* **Resolution:**
+* Updated the hardcoded resource block in `bankapp/templates/mysql-deployment.yaml` to dynamically parse values using `{{- toYaml .Values.mysql.resources | nindent 12 }}`.
+* Increased the memory allocation in `values-dev.yaml` to `requests: 512Mi` and `limits: 1Gi`.
+
+
+
+**3. Stuck Helm Upgrades (Pending Lock)**
+
+* **Symptom:** Attempting to apply the new memory limits using `helm upgrade` returned an error: `UPGRADE FAILED: another operation (install/upgrade/rollback) is in progress`.
+* **Root Cause:** The previous `helm install` command was interrupted (Ctrl+C) while it was deadlocked by the pre-install hook, leaving the Helm release state locked in a "pending-install" status.
+* **Resolution:** Executed a full `helm uninstall bankapp-dev -n dev` to clear the corrupted release state and wipe orphaned resources, followed by a clean `helm install` with the corrected configuration.
+
+**4. Resource Starvation from Ghost Pods**
+
+* **Symptom:** Even with Docker memory limits set high (8GB+), the cluster struggled to allocate resources.
+* **Root Cause:** An orphaned MySQL StatefulSet (`bankapp-mysql-0`) from a previous exercise was still running in the `default` namespace, consuming cluster node memory.
+* **Resolution:** Manually purged the stale StatefulSet and service using `kubectl delete statefulset bankapp-mysql`, freeing up the necessary node memory for the dev deployment.
+
+<img width="2334" height="1056" alt="image" src="https://github.com/user-attachments/assets/aabdc784-5bac-46d0-b8f8-0a833c6b8774" />
+<img width="1902" height="512" alt="image" src="https://github.com/user-attachments/assets/af975bd2-14de-496f-b7cc-bee126c0a6aa" />
+<img width="2518" height="894" alt="image" src="https://github.com/user-attachments/assets/71ec3670-dfe6-4a22-bc0c-6307515e8a95" />
+
+
 
 ### 3-Day Helm Journey Summary
 
