@@ -190,12 +190,16 @@ gateway:
 helm install bankapp-dev bankapp/ -f bankapp/values-dev.yaml -n dev --create-namespace
 
 # Staging dry-run template check
-helm template bankapp-staging bankapp/ -f bankapp/values-staging.yaml | grep "replicas:"
+helm template bankapp-staging bankapp/ -f bankapp/values-staging.yaml | grep -i "replicas:"
 
 # Prod dry-run template check
-helm template bankapp-prod bankapp/ -f bankapp/values-prod.yaml | grep "replicas:"
+helm template bankapp-prod bankapp/ -f bankapp/values-prod.yaml | grep -i "replicas:"
 
 ```
+
+<img width="2384" height="1004" alt="image" src="https://github.com/user-attachments/assets/590cbfab-9296-480e-9154-b511e41a1d76" />
+
+<img width="2408" height="480" alt="image" src="https://github.com/user-attachments/assets/40fffe5f-b866-440e-ba1a-82a2f6e38e25" />
 
 ---
 
