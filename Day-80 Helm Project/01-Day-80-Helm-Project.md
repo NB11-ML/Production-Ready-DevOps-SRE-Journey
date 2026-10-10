@@ -14,9 +14,9 @@ One chart, three environments. The AI-BankApp runs differently in development vs
 bankapp:
   replicaCount: 1
   image:
-    repository: trainwithshubham/ai-bankapp-eks
+    repository: my-local-bankapp
     tag: "latest"
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
   resources:
     requests:
       memory: "256Mi"
@@ -65,7 +65,7 @@ storageClass:
 bankapp:
   replicaCount: 2
   image:
-    repository: trainwithshubham/ai-bankapp-eks
+    repository: my-local-bankapp
     tag: "v1.2.0"
     pullPolicy: IfNotPresent
   resources:
@@ -117,7 +117,7 @@ storageClass:
 bankapp:
   replicaCount: 4
   image:
-    repository: trainwithshubham/ai-bankapp-eks
+    repository: my-local-bankapp
     tag: "v1.2.0"
     pullPolicy: IfNotPresent
   resources:
@@ -170,7 +170,6 @@ storageClass:
 
 gateway:
   enabled: true
-
 ```
 
 ### Environment Comparison Matrix
