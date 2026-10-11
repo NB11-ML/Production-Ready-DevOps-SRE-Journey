@@ -236,19 +236,5 @@ terraform destroy
 
 ```
 
----
-
-## 📸 Documentation Requirements for Submission
-
-Add `day-81-eks-intro.md` to `2026/day-81/` along with the following screenshots:
-
-1. EKS architecture diagram (VPC, subnets, control plane, node group, add-ons).
-2. Brief explanation of each Terraform file in your own words.
-3. Screenshot of `kubectl get nodes` showing 3 EKS nodes across AZs.
-4. Screenshot of `kubectl get pods -n kube-system` showing all add-ons.
-5. Screenshot of the AI-BankApp running on EKS (login page or dashboard).
-6. Screenshot of `kubectl get pvc -n bankapp` showing EBS-backed volumes.
-7. ArgoCD login URL and confirmation it is accessible.
-
 
 ---
