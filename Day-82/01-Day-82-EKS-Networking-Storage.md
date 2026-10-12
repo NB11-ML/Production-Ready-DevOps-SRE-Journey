@@ -655,8 +655,6 @@ Once the Secret `bankapp-tls` exists in the `bankapp` namespace, the Envoy Gatew
 * **Internal VPC Routing:** Once decrypted, Envoy inspects HTTP headers, matches the route rules (`PathPrefix: /`), calculates the session affinity cookie hash, and sends plain HTTP to `bankapp-service` on port `8080`.
 * **Resource Isolation:** Pods inside the cluster do not need to manage certificates, Java Keystores (`JKS`), or TLS CPU overhead—Envoy offloads all encryption and certificate renewals.
 
-```
-
 ---
 
 ### Verification Commands for TLS Status
@@ -679,6 +677,8 @@ curl -Iv https://$HOSTNAME
 
 ```
 
+<img width="2706" height="1450" alt="image" src="https://github.com/user-attachments/assets/f8006370-ef23-4b2e-bd74-4d122bfd4383" />
+
 ---
 
 
@@ -700,7 +700,7 @@ kubectl get pv
 ```
 
 > **Screenshot:** `kubectl get pvc -n bankapp` showing MySQL and Ollama PVCs in `Bound` status.
-> *(Insert Screenshot Here)*
+<img width="3152" height="676" alt="image" src="https://github.com/user-attachments/assets/bfa02900-dd80-4279-9d73-cec85414b2c0" />
 
 ### Key EBS Concepts on EKS
 
@@ -721,6 +721,8 @@ kubectl get pods -n bankapp -l app=mysql -w
 kubectl exec -n bankapp deploy/mysql -- mysql -uroot -pTest@123 -e "SHOW DATABASES;"
 
 ```
+<img width="2834" height="1154" alt="image" src="https://github.com/user-attachments/assets/17397f9c-b2c4-4700-be45-6888df6efd39" />
+
 
 ## Task 6: HPA & Resource Budgeting
 
