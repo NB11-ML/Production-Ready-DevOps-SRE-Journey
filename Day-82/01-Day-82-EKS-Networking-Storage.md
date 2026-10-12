@@ -1,6 +1,7 @@
 # Day 82: EKS Networking with Gateway API and Persistent Storage
 
 ## Prerequisites: Reconnecting to an Ephemeral Cluster
+
 If you run `terraform destroy` to save costs overnight and `terraform apply` to spin the cluster back up the next day, your local `kubectl` configuration will point to a dead server.
 
 Run this command to update your local kubeconfig with the new cluster's connection details:
@@ -220,6 +221,8 @@ curl http://$GATEWAY_IP
 ```
 <img width="2152" height="626" alt="image" src="https://github.com/user-attachments/assets/8469d1d9-e5db-4725-b15c-d915cbd11584" />
 
+<img width="2910" height="2036" alt="image" src="https://github.com/user-attachments/assets/1af3f3b7-fb4b-45b6-9264-f254379e803d" />
+
 --- 
 
 ### Troubleshooting: Resolving HTTP 404 on Raw NLB Endpoints
@@ -228,7 +231,9 @@ curl http://$GATEWAY_IP
 Querying the raw AWS NLB endpoint (`curl -I http://$GATEWAY_IP`) returned an `HTTP/1.1 404 Not Found` directly from Envoy, despite the Gateway reporting `Programmed: True`.
 
 #### Root Cause
+
 The default `HTTPRoute` manifest contained a strict host header restriction:
+
 ```yaml
 spec:
   hostnames:
