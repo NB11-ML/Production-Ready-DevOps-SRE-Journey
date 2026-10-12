@@ -283,12 +283,11 @@ set-cookie: BANKAPP_AFFINITY="80387b034f325236"; Max-Age=3600; HttpOnly
 
 ---
 
-
 ## Task 4: Automating TLS with cert-manager
 
-To secure the Gateway with HTTPS, we integrate `cert-manager` with Let's Encrypt.
+To secure the AI-BankApp with HTTPS, we install `cert-manager` to handle automated certificate issuance and renewals via Let's Encrypt.
 
-### 1. Installation
+### 1. Install cert-manager via Helm
 
 ```bash
 helm repo add jetstack [https://charts.jetstack.io](https://charts.jetstack.io)
@@ -301,21 +300,387 @@ helm install cert-manager jetstack/cert-manager \
 
 ```
 
-### 2. How the TLS Flow Works
+<img width="2236" height="1650" alt="image" src="https://github.com/user-attachments/assets/1a22601e-206f-470c-9be1-337a4ec26e08" />
 
-1. `cert-manager` reads the `ClusterIssuer` and requests a cert from Let's Encrypt.
-2. Let's Encrypt issues an HTTP-01 challenge.
-3. `cert-manager` creates a temporary `HTTPRoute` to solve the challenge.
-4. Upon verification, the certificate is stored in a Kubernetes Secret (`bankapp-tls`).
-5. The Envoy Gateway terminates HTTPS using this newly generated Secret.
 
-*(Testing Note: To utilize Let's Encrypt effectively without a custom domain, `nip.io` provides wildcard DNS mapping directly to the NLB IP).*
+Verify that all three cert-manager controller pods are running:
 
 ```bash
-export HOSTNAME="${GATEWAY_IP}.nip.io"
-echo "HTTPS URL: https://$HOSTNAME"
+kubectl get pods -n cert-manager
 
 ```
+
+<img width="1814" height="402" alt="image" src="https://github.com/user-attachments/assets/5c8b46a2-87f3-4edf-b686-a0c4f9c14801" />
+
+---
+
+### 2. SRE Gotcha: Configuring `nip.io` with AWS NLB DNS Names
+
+#### The Issue
+
+When running on local Kubernetes clusters (like Minikube or KinD), the load balancer address is an IPv4 address, allowing commands like `export HOSTNAME="${GATEWAY_IP}.nip.io"` to produce valid wildcard domains (e.g., `52.25.142.20.nip.io`).
+
+On AWS EKS, Envoy Gateway provisions an AWS Network Load Balancer (NLB), which assigns a **DNS hostname** rather than a static IP:
+
+```text
+a0db2818a7fxxxxxxxxxxxxd6674e-xxxxxxxxxx.us-west-2.elb.amazonaws.com
+
+```
+
+Appending `.nip.io` directly to an existing AWS DNS hostname yields an invalid domain (`...elb.amazonaws.com.nip.io`) that Let's Encrypt cannot resolve.
+
+#### The Fix: Extract the Underlying NLB Public IPv4
+
+Resolve one of the active public IP addresses backing the AWS NLB before creating the `nip.io` hostname:
+
+```bash
+# 1. Resolve an active public IP behind the AWS NLB
+export NLB_IP=$(dig +short $GATEWAY_IP | grep -E '^[0-9]' | head -n 1)
+
+# 2. Construct the valid nip.io wildcard domain
+export HOSTNAME="${NLB_IP}.nip.io"
+echo "Correct HTTPS URL: https://$HOSTNAME"
+
+```
+
+<img width="2242" height="332" alt="image" src="https://github.com/user-attachments/assets/a3660f70-98a3-44a6-b4a3-4288190f761e" />
+
+---
+
+### 3. Apply the Let's Encrypt ClusterIssuer
+
+Study and apply the `ClusterIssuer` configured for Gateway API HTTP-01 challenges (`k8s/cert-manager.yml`):
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: [https://acme-v02.api.letsencrypt.org/directory](https://acme-v02.api.letsencrypt.org/directory)
+    email: admin@example.com
+    privateKeySecretRef:
+      name: letsencrypt-account-key
+    solvers:
+    - http01:
+        gatewayHTTPRoute:
+          parentRefs:
+          - group: gateway.networking.k8s.io
+            kind: Gateway
+            name: bankapp-gateway
+            namespace: bankapp
+
+```
+
+Apply the issuer:
+
+```bash
+kubectl apply -f k8s/cert-manager.yml
+
+```
+
+---
+
+### 4. How the Gateway API ACME HTTP-01 Workflow Works
+
+1. **Certificate Request:** cert-manager detects the `cert-manager.io/cluster-issuer: letsencrypt-prod` annotation on `bankapp-gateway` (or a dedicated `Certificate` resource) and initiates an ACME order with Let's Encrypt.
+2. **Dynamic Route Creation:** cert-manager provisions a temporary `HTTPRoute` referencing `bankapp-gateway` specifically to solve the ACME HTTP-01 challenge path (`/.well-known/acme-challenge/*`).
+3. **Challenge Validation:** Let's Encrypt verifies ownership by sending a GET request through the AWS NLB to the temporary route.
+4. **Secret Storage:** Once verified, Let's Encrypt issues the certificate, which cert-manager writes to the `bankapp-tls` Kubernetes Secret.
+5. **TLS Termination:** Envoy Gateway attaches the `bankapp-tls` secret to its HTTPS listener on port 443, terminating TLS traffic before routing requests to `bankapp-service`.
+
+---
+
+### 5. Update Gateway Hostname and Verify
+
+Update the `https` listener hostname in `k8s/gateway.yml` with your resolved `$HOSTNAME`:
+
+```yaml
+listeners:
+  - name: https
+    protocol: HTTPS
+    port: 443
+    hostname: <your-resolved-ip>.nip.io
+    tls:
+      mode: Terminate
+      certificateRefs:
+      - group: ""
+        kind: Secret
+        name: bankapp-tls
+
+```
+
+Apply changes and verify certificate issuance:
+
+```bash
+kubectl apply -f k8s/gateway.yml
+
+# Check certificate issuance status
+kubectl get certificate -n bankapp
+kubectl describe clusterissuer letsencrypt-prod
+
+```
+
+### Safety Check: Yes, It Is Safe
+
+There are no AWS account IDs, private keys, passwords, or cloud credentials in this output.
+
+* The UID (`8e92a1e8...`) is an internal Kubernetes cluster ID, not an AWS identifier.
+
+
+* The email `mentor@trainwithshubham.com` is the public challenge contact email. You can keep it as-is or replace it with a placeholder like `admin@example.com` when publishing to a public repository.
+
+
+
+---
+
+### Verification: Active Certificate & ClusterIssuer
+
+Check that cert-manager successfully registered with Let's Encrypt and issued the TLS certificate:
+
+```bash
+kubectl get certificate -n bankapp
+
+```
+
+**Output:**
+
+```text
+NAME          READY   SECRET        AGE
+bankapp-tls   True    bankapp-tls   11m
+
+```
+
+```bash
+kubectl describe clusterissuer letsencrypt-prod
+
+```
+
+**Output:**
+
+```text
+Name:         letsencrypt-prod
+API Version:  cert-manager.io/v1
+Kind:         ClusterIssuer
+Metadata:
+  Creation Timestamp:  2026-10-12T12:15:44Z
+Spec:
+  Acme:
+    Email:  mentor@trainwithshubham.com
+    Private Key Secret Ref:
+      Name:  letsencrypt-account-key
+    Server:  [https://acme-v02.api.letsencrypt.org/directory](https://acme-v02.api.letsencrypt.org/directory)
+    Solvers:
+      http01:
+        Gateway HTTPRoute:
+          Parent Refs:
+            Group:      gateway.networking.k8s.io
+            Kind:       Gateway
+            Name:       bankapp-gateway
+            Namespace:  bankapp
+Status:
+  Conditions:
+    Message:               The ACME account was registered with the ACME server
+    Reason:                ACMEAccountRegistered
+    Status:                True
+    Type:                  Ready
+
+```
+
+<img width="1818" height="1220" alt="image" src="https://github.com/user-attachments/assets/614cb580-77dd-459c-a574-051721fd18dd" />
+
+
+---
+
+### Troubleshooting 1: `gateway api is not enabled` in cert-manager
+
+#### Symptom
+
+During HTTP-01 challenge processing, `kubectl describe challenge -n bankapp` returns:
+
+```text
+Warning  PresentError  cert-manager-challenges  Error presenting challenge: couldn't Present challenge ...: gateway api is not enabled
+
+```
+
+#### Root Cause
+
+By default, cert-manager disables Gateway API controller support to reduce overhead when only standard Ingress is used. When configuring `gatewayHTTPRoute` solvers under a `ClusterIssuer`, cert-manager will not reconcile solver routes until Gateway API support is explicitly enabled on the controller.
+
+#### Resolution
+
+Patch the cert-manager deployment to include the `--enable-gateway-api` flag:
+
+```bash
+kubectl -n cert-manager patch deployment cert-manager \
+  --type='json' \
+  -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--enable-gateway-api"}]'
+
+# Wait for controller restart
+kubectl rollout status deployment cert-manager -n cert-manager
+
+```
+
+---
+
+### Troubleshooting 2: `No resources found in bankapp namespace` for Certificate
+
+#### Symptom
+
+After applying `k8s/gateway.yml` with the `cert-manager.io/cluster-issuer` annotation, running `kubectl get certificate -n bankapp` returns `No resources found`.
+
+#### Root Cause
+
+The `gateway-shim` in cert-manager watches `Gateway` resources dynamically. If cert-manager was started before the Gateway API CRDs were installed, or if the Gateway annotation is ignored, the certificate resource will not auto-generate.
+
+#### Resolution
+
+Declare the `Certificate` resource explicitly in GitOps rather than relying on dynamic annotations:
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: bankapp-tls
+  namespace: bankapp
+spec:
+  secretName: bankapp-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+  - "<your-resolved-nlb-ip>.nip.io"
+
+```
+
+Apply the manifest directly to trigger ACME order generation:
+
+```bash
+kubectl apply -f k8s/certificate.yml
+
+```
+
+### Deep Dive: How the TLS & cert-manager Flow Works under Gateway API
+
+The TLS lifecycle consists of two distinct stages:
+1. **Control Plane Workflow:** Automated certificate issuance and validation (ACME HTTP-01 Challenge).
+2. **Data Plane Workflow:** Runtime HTTPS traffic encryption and TLS termination at Envoy Gateway.
+
+---
+
+#### 1. The Certificate Issuance Flow (ACME HTTP-01 Challenge)
+
+Unlike traditional Ingress (which spins up an Ingress rule or temporary solver Pod), Gateway API integrates natively with `cert-manager` by dynamically creating a temporary `HTTPRoute`.
+
+```text
++-------------------+             +-----------------------+             +------------------------+
+|   Let's Encrypt   |             |     cert-manager      |             |   Envoy Gateway        |
+|   (ACME Server)   |             |   (Cluster Control)   |             |   & Gateway API        |
++---------+---------+             +-----------+-----------+             +-----------+------------+
+          |                                   |                                     |
+          |  1. Request Cert (Order Created)  |                                     |
+          |<----------------------------------+                                     |
+          |                                   |                                     |
+          |  2. Returns HTTP-01 Token Key     |                                     |
+          +---------------------------------->|                                     |
+          |                                   |  3. Injects temporary solver pod   |
+          |                                   |     & dynamic HTTPRoute             |
+          |                                   +------------------------------------>|
+          |                                   |                                     |
+          |  4. GET /.well-known/acme-challenge/<token>                             |
+          +------------------------------------------------------------------------>| (Hits AWS NLB)
+          |                                                                         |
+          |                               5. Matches challenge path & forwards      |
+          |                                  to cert-manager solver pod             |
+          |                                   |<------------------------------------+
+          |  6. Token matches! Challenge PASS |                                     |
+          +<----------------------------------+                                     |
+          |                                   |                                     |
+          |  7. Issues X.509 Certificate      |                                     |
+          +---------------------------------->|                                     |
+          |                                   |  8. Saves cert to Secret:           |
+          |                                   |     "bankapp-tls" (tls.crt/tls.key) |
+          |                                   +------------------------------------>|
+
+```
+
+##### Detailed Issuance Mechanics:
+
+1. **Trigger:** `cert-manager` detects the `cert-manager.io/cluster-issuer: letsencrypt-prod` annotation on `bankapp-gateway` (or a `Certificate` CRD).
+2. **ACME Order:** It requests a certificate from the Let's Encrypt ACME API (`https://acme-v02.api.letsencrypt.org/directory`).
+3. **Challenge Token:** Let's Encrypt responds: *"Prove you own this domain by serving token `XYZ` at `http://<domain>/.well-known/acme-challenge/XYZ`."*
+4. **Gateway API Solver Route:** `cert-manager` automatically creates:
+* A lightweight challenge pod running a temporary web server holding token `XYZ`.
+* An **`HTTPRoute`** attached to `bankapp-gateway` under the `http` listener targeting `/.well-known/acme-challenge/*`.
+
+
+5. **Validation:** Let's Encrypt makes a standard HTTP request to `http://<your-ip>.nip.io/.well-known/acme-challenge/XYZ`. Traffic flows through the AWS NLB, matches the solver `HTTPRoute`, and receives `XYZ`.
+6. **Issuance & Cleanup:** Let's Encrypt signs and returns the public certificate. `cert-manager` tears down the temporary solver route and writes the certificate and private key into the Kubernetes Secret `bankapp-tls`.
+
+---
+
+#### 2. The Runtime HTTPS Data Plane Flow (TLS Termination)
+
+Once the Secret `bankapp-tls` exists in the `bankapp` namespace, the Envoy Gateway HTTPS listener starts accepting encrypted traffic.
+
+```text
+[Browser / Client]
+       |
+       | 1. HTTPS Request (Port 443 / TLS ClientHello)
+       v
+  [AWS NLB] (Layer 4 TCP Passthrough)
+       |
+       | 2. Passes encrypted TCP packets directly to Envoy
+       v
+[Envoy Proxy Pod] (Layer 7 TLS Termination)
+  |-- Mounts Secret: bankapp-tls (tls.crt + tls.key)
+  |-- Completes TLS Handshake with Client
+  |-- Decrypts payload from HTTPS to plain HTTP
+  |-- Evaluates BackendTrafficPolicy (BANKAPP_AFFINITY cookie)
+       |
+       | 3. Unencrypted HTTP traffic (Port 8080) inside VPC
+       v
+[bankapp-service:8080]
+       |
+       +---> [bankapp-pod-1] (Pinned via affinity cookie)
+       +---> [bankapp-pod-2]
+
+```
+
+##### Key Concepts in the Runtime Flow:
+
+* **Layer 4 vs. Layer 7:** The AWS NLB operates at Layer 4 (TCP), passing the raw encrypted TLS stream directly to Envoy without decrypting it.
+* **Edge TLS Termination:** Envoy Gateway terminates TLS at the edge of the Kubernetes cluster. It performs the cryptographic handshake using the keys mounted from `bankapp-tls`.
+* **Internal VPC Routing:** Once decrypted, Envoy inspects HTTP headers, matches the route rules (`PathPrefix: /`), calculates the session affinity cookie hash, and sends plain HTTP to `bankapp-service` on port `8080`.
+* **Resource Isolation:** Pods inside the cluster do not need to manage certificates, Java Keystores (`JKS`), or TLS CPU overhead—Envoy offloads all encryption and certificate renewals.
+
+```
+
+---
+
+### Verification Commands for TLS Status
+
+Add these checks to verify each stage of the TLS process:
+
+```bash
+# 1. Check if the Certificate object was created and is valid
+kubectl get certificate -n bankapp
+
+# 2. Check the order and challenge status
+kubectl get certificaterequest -n bankapp
+kubectl get challenges -n bankapp
+
+# 3. Check if the TLS Secret was generated
+kubectl get secret bankapp-tls -n bankapp
+
+# 4. Test TLS handshake and certificate issuer via cURL
+curl -Iv https://$HOSTNAME
+
+```
+
+---
+
 
 ## Task 5: EBS Persistent Storage in Action
 
