@@ -24,9 +24,9 @@ When you run `terraform apply` for a second time, it doesn't "wake up" your old 
 * **The Stale DNS Mapping:** `kubectl` has no native awareness of your cloud provider. It blindly trusts the connection string cached in your local `~/.kube/config` file. Because yesterday's cluster was destroyed, its AWS endpoint was deleted. When `kubectl` tried to resolve that old URL today, your computer's DNS resolver returned the `no such host` error.
 * **How the Fix Works:** Running `aws eks update-kubeconfig` acts as the bridge. It calls the AWS API, asks for the current endpoint URL and certificate authority data for the cluster named `bankapp-eks`, and safely overwrites the stale block in your `~/.kube/config` file.
 
-```
 
 ## Introduction
+
 While the AI-BankApp was successfully deployed using raw manifests, a production-grade deployment requires robust ingress, HTTPS, session persistence, and reliable storage. Today, we transition from the traditional Ingress controller to the **Kubernetes Gateway API** using **Envoy Gateway**, configure TLS with **cert-manager**, and explore dynamic **EBS persistent storage** on Amazon EKS.
 
 ## Task 1: Gateway API vs. Ingress
