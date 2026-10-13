@@ -91,6 +91,15 @@ kubectl port-forward svc/argocd-server -n argocd 8443:443
 
 ```
 
+<img width="1696" height="492" alt="image" src="https://github.com/user-attachments/assets/b035dcea-6b96-41a2-93dc-23a2efe2f673" />
+
+<img width="1680" height="534" alt="image" src="https://github.com/user-attachments/assets/91b69f3d-6136-4d8d-8900-faed502beedf" />
+
+
+<img width="2620" height="2026" alt="image" src="https://github.com/user-attachments/assets/22b58f65-a29d-4d98-bd79-2c7fcbc96202" />
+
+
+
 *Successfully authenticated to the ArgoCD UI (`https://localhost:8443`) and ArgoCD CLI using the `admin` credentials.*
 
 ---
@@ -140,19 +149,88 @@ spec:
 
 ---
 
-## Task 4: Deploying AI-BankApp via ArgoCD
+Here is the complete, formatted Markdown section for Task 4 that you can copy and paste directly into your `day-84-gitops-argocd.md` file. It includes the deployment steps, the exact troubleshooting fixes you performed for the Envoy Gateway CRDs, the correct UI access method, and a placeholder for your screenshot.
 
-1. Cleaned the slate by deleting the manually applied namespace:
+---
+
+### Task 4: GitOps Deployment and Verification via Argo CD
+
+In this task, we deploy the AI-BankApp microservices using an Argo CD `Application` manifest. This manifest points Argo CD to our Git repository, enforcing a GitOps workflow where the cluster state automatically mirrors the repository state.
+
+#### 4.1 Apply the Argo CD Application
+
+First, deploy the application configuration that tells Argo CD to monitor the `feat/gitops` branch:
+
 ```bash
-kubectl delete namespace bankapp 2>/dev/null
+kubectl apply -f argocd/application.yml
 
 ```
 
+#### 4.2 Troubleshooting: Envoy Gateway CRD Validation Error
 
-2. Applied the ArgoCD `Application` manifest pointing to the forked repository.
-3. Monitored the deployment lifecycle natively through the ArgoCD UI Resource Tree. ArgoCD intelligently applied all manifests, successfully orchestrating the Stateful dependencies (MySQL & Ollama) alongside the Spring Boot application pods.
+During the initial sync, Argo CD reported a `Degraded` status with a validation error on the `BackendTrafficPolicy` (`bankapp-session`).
 
-*(Insert Screenshot: `images/argocd-resource-tree.png` - Showing the healthy Application Resource Tree from the ArgoCD UI)*
+**The Cause:** The cluster was running Envoy Gateway v1.0.1, but the repository manifests utilized features introduced in v1.1+ (specifically `type: Cookie` for consistent hashing and plural `targetRefs`).
+
+**The Fix:** Upgraded Envoy Gateway and its CRDs to v1.1.0 to align the cluster schema with the GitOps manifests:
+
+```bash
+# 1. Pull the v1.1.0 chart
+helm pull oci://docker.io/envoyproxy/gateway-helm --version v1.1.0 --untar
+
+# 2. Apply the updated v1.1.0 CRDs
+kubectl apply --server-side --force-conflicts -f gateway-helm/crds/generated/
+rm -rf gateway-helm
+
+# 3. Upgrade the Envoy Gateway Helm release
+helm upgrade eg oci://docker.io/envoyproxy/gateway-helm \
+  --version v1.1.0 \
+  -n envoy-gateway-system \
+  --skip-crds
+
+```
+
+After the upgrade, we triggered a fresh sync:
+
+```bash
+kubectl patch application bankapp -n argocd --type merge -p '{"operation":{"sync":{"prune":true}}}'
+
+```
+
+#### 4.3 Accessing the Argo CD UI
+
+To visually verify the deployment, we need to access the Argo CD dashboard. We retrieved the initial admin password using:
+
+```bash
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo
+
+```
+
+**Access Method 1: AWS Load Balancer (Primary)**
+The `argocd-server` service is provisioned with an AWS Classic Load Balancer. You can access the UI directly via plain HTTP to avoid TLS mismatch errors:
+
+```bash
+kubectl get svc -n argocd argocd-server
+
+```
+
+*URL:* `http://<YOUR-ELB-DNS-NAME>`
+
+**Access Method 2: Local Port-Forwarding**
+If the Load Balancer is restricted by security groups, use port-forwarding. Note: We must forward to target port 80 (which maps to the container's plaintext HTTP port 8080) to avoid `connection reset by peer` errors caused by TLS handshakes on a plaintext listener:
+
+```bash
+kubectl port-forward svc/argocd-server -n argocd 8080:80
+
+```
+
+*URL:* `http://localhost:8080`
+
+#### 4.4 Final Verification (Resource Tree)
+
+Once logged in (Username: `admin`), clicking on the `bankapp` application reveals the complete GitOps state. The application successfully transitioned to **Synced** and **Healthy**, indicating all workloads (MySQL, Ollama, Spring Boot Pods, and Gateway API routes) are actively running.
+
+<img width="3306" height="1400" alt="image" src="https://github.com/user-attachments/assets/8a4fb98f-329d-4c33-8e42-7b290ea1dcbd" />
 
 ---
 
@@ -167,6 +245,12 @@ To validate GitOps immutability, I conducted three manual "chaos" modifications 
 kubectl scale deployment bankapp -n bankapp --replicas=1
 
 ```
+
+<img width="1982" height="340" alt="image" src="https://github.com/user-attachments/assets/a798477f-2ffe-471a-8da6-d06963ba9641" />
+
+
+<img width="3316" height="1132" alt="image" src="https://github.com/user-attachments/assets/ac7a1886-bf0a-407d-afa4-6a5570e6129d" />
+
 
 
 * **Result:** ArgoCD detected an `OutOfSync` drift within its 3-minute polling window. It immediately reconciled the Deployment, spinning the replicas back up to match the Git state (or the HPA's declared baseline).
@@ -193,7 +277,9 @@ kubectl edit configmap bankapp-config -n bankapp
 
 * **Result:** The live cluster drift was detected. ArgoCD safely overwrote the manual tampering with the validated, version-controlled configuration stored in Git.
 
-*(Insert Screenshot: `images/argocd-sync-drift.png` - Showing the Sync event history and drift correction in the ArgoCD UI)*
+<img width="3312" height="1684" alt="image" src="https://github.com/user-attachments/assets/16e3752c-7660-4a0e-a8a7-c3b2818abbf1" />
+
+<img width="3308" height="1872" alt="image" src="https://github.com/user-attachments/assets/be599a42-e525-4248-8672-628e5f1f8de3" />
 
 ### Conclusion
 
