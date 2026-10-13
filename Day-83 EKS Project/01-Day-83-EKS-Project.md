@@ -112,6 +112,9 @@ kubectl get pvc -n bankapp
 
 ```
 
+<img width="2990" height="1316" alt="image" src="https://github.com/user-attachments/assets/39c86ffe-58bf-423d-bb71-ca7b886db56b" />
+
+
 **Expected Status:**
 
 * `mysql`: 1 pod in `Running` state, with `mysql-pvc` (5Gi) `Bound`.
@@ -166,6 +169,10 @@ curl -s -o /dev/null -w "HTTP Status Code: %{http_code}\n" http://$APP_URL
 
 ```
 
+<img width="2676" height="1226" alt="image" src="https://github.com/user-attachments/assets/d351bb65-1e13-46a0-8dc1-4fe2b31f62d4" />
+
+
+
 ### 2.4 End-to-End User Journey Validation
 
 Open `http://$APP_URL` in your browser and complete the following verification steps:
@@ -175,6 +182,8 @@ Open `http://$APP_URL` in your browser and complete the following verification s
 3. **Core Banking Transactions:** Execute a **Deposit ($500)**, **Withdrawal ($100)**, and check the updated ledger.
 4. **AI Financial Assistant:** Open the AI Chatbot and ask: *"How should I budget my monthly income?"*. Confirm that the TinyLlama model generates a response.
 5. **UI Customization:** Toggle dark and light mode to ensure assets load properly without errors.
+
+<img width="3324" height="1880" alt="image" src="https://github.com/user-attachments/assets/615661d8-3426-47c6-935d-c9349637b88b" />
 
 ---
 
