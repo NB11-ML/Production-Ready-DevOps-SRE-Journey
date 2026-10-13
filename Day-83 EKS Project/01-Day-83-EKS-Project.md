@@ -521,6 +521,10 @@ kubectl delete -f k8s/namespace.yml
 helm uninstall envoy-gateway -n envoy-gateway-system 2>/dev/null
 kubectl delete namespace monitoring envoy-gateway-system 2>/dev/null
 
+# 4b. Delete External Tooling / Argo CD LoadBalancer (Triggers AWS Classic ELB deletion)
+kubectl delete svc argocd-server -n argocd 2>/dev/null
+kubectl delete namespace argocd 2>/dev/null
+
 ```
 
 Verify that all LoadBalancers and PVCs have released their AWS cloud resources:
@@ -564,6 +568,15 @@ aws ec2 describe-nat-gateways --region us-west-2 --filter "Name=state,Values=ava
 ```
 
 **Target Output:** All queries return empty tables or `"clusters": []`.
+
+### 6.3 Post-Teardown Verification Checklist
+Verified zero lingering resources across AWS region `us-west-2`:
+- [x] **EKS Clusters:** 0 active clusters (`aws eks list-clusters`)
+- [x] **Elastic Load Balancers:** 0 active ALBs/NLBs (`aws elbv2 describe-load-balancers`)
+- [x] **Classic Load Balancers:** 0 active ELBs (`aws elb describe-load-balancers`)
+- [x] **EBS Volumes:** 0 volumes in use or available (`aws ec2 describe-volumes`)
+- [x] **Elastic IPs:** 0 allocated addresses (`aws ec2 describe-addresses`)
+- [x] **NAT Gateways:** 0 NAT gateways running (`aws ec2 describe-nat-gateways`)
 
 ---
 
