@@ -79,6 +79,8 @@ argocd app get bankapp
 
 ```
 
+<img width="3420" height="1430" alt="image" src="https://github.com/user-attachments/assets/f1e1771f-b66a-46f4-9211-4a4f78bd00c8" />
+
 
 4. **Inspect the diff between Git and cluster state:**
 ```bash
@@ -93,12 +95,14 @@ argocd app sync bankapp --dry-run
 
 ```
 
+<img width="3420" height="970" alt="image" src="https://github.com/user-attachments/assets/19bd37f0-a729-43bf-af80-817e95489d8f" />
 
 6. **Apply the sync manually:**
 ```bash
 argocd app sync bankapp
 
 ```
+<img width="3408" height="1418" alt="image" src="https://github.com/user-attachments/assets/b297c5b8-a25d-4ea0-ba4d-b87b6ac63d80" />
 
 
 7. **Restore automated synchronization and self-healing:**
@@ -230,7 +234,7 @@ git push origin feat/gitops
 
 ```
 
-*Screenshot of ArgoCD UI during the ordered sync wave deployment:*
+<img width="3330" height="1898" alt="image" src="https://github.com/user-attachments/assets/e7ef62cd-bbbe-4fad-9e89-d66f8dfd33c2" />
 
 
 ---
@@ -245,6 +249,8 @@ ArgoCD records each synchronization phase as a distinct revision ID containing t
 argocd app history bankapp
 
 ```
+<img width="1704" height="688" alt="image" src="https://github.com/user-attachments/assets/d419d285-6144-4576-a67e-da7cc9cf5137" />
+
 
 Example Output:
 
@@ -260,9 +266,12 @@ ID  DATE                  REVISION
 Rollback to revision 1 via CLI:
 
 ```bash
-argocd app rollback bankapp 1
+argocd app rollback bankapp 17
 
 ```
+
+<img width="3412" height="1640" alt="image" src="https://github.com/user-attachments/assets/42333bf7-a217-4b23-8953-f56f22c2e77c" />
+
 
 *(Alternatively, via the UI: Navigate to `bankapp` > **History and Rollback** > select Revision 1 > click **Rollback**).*
 
@@ -273,7 +282,10 @@ argocd app get bankapp
 
 ```
 
-*Result:* The cluster workloads run revision 1, but the application status displays **`OutOfSync`**.
+<img width="3416" height="1498" alt="image" src="https://github.com/user-attachments/assets/7ddcff6d-8314-4305-8b9f-0d6d2c3bd614" />
+
+
+*Result:* The cluster workloads run revision 17, but the application status displays **`OutOfSync`**.
 
 ---
 
@@ -294,6 +306,8 @@ git revert HEAD
 git push origin feat/gitops
 
 ```
+
+<img width="3044" height="690" alt="image" src="https://github.com/user-attachments/assets/94cb5331-a87b-4628-a613-afe3b3d46a9a" />
 
 
 * **Impact on Git:** Appends a new commit that reverts the changes made in the problematic commit, leaving the repository history fully auditable.
@@ -487,7 +501,10 @@ monitoring     https://kubernetes.default.svc  monitoring            default  Sy
 
 
 
-*Screenshot of ArgoCD dashboard showing the root app managing all child apps:*
+<img width="3334" height="1838" alt="image" src="https://github.com/user-attachments/assets/8f91a1c1-d8de-496d-a08d-8bf3b7098187" />
+
+
+<img width="3040" height="314" alt="image" src="https://github.com/user-attachments/assets/dbe0f515-2247-4642-8231-0cb15691f06e" />
 
 
 ---
@@ -560,6 +577,8 @@ kubectl get applications bankapp -n argocd -o jsonpath='{.status.operationState.
 
 ```
 
+<img width="3414" height="462" alt="image" src="https://github.com/user-attachments/assets/288ef1e0-8216-4ee4-ba2d-f0c772aee75d" />
+
 ---
 
 ## Task 6: ArgoCD Projects and RBAC (Multi-Tenancy)
@@ -595,7 +614,8 @@ argocd proj add-destination bankapp-team https://kubernetes.default.svc kube-sys
 
 ```
 
-*Expected Result:* The operation is rejected, demonstrating the project boundary.
+
+<img width="2240" height="726" alt="image" src="https://github.com/user-attachments/assets/499d6f69-4f79-447f-be52-0bc886f9f1b4" />
 
 ### 4. Configure Role-Based Access Control (RBAC)
 
@@ -617,6 +637,9 @@ data:
 EOF
 
 ```
+
+<img width="3418" height="1284" alt="image" src="https://github.com/user-attachments/assets/00c29cab-0574-4fba-84ac-64feee718a16" />
+
 
 ---
 
