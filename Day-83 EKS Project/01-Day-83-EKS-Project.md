@@ -185,6 +185,35 @@ Open `http://$APP_URL` in your browser and complete the following verification s
 
 <img width="3324" height="1880" alt="image" src="https://github.com/user-attachments/assets/615661d8-3426-47c6-935d-c9349637b88b" />
 
+
+### 2.5 Real-World Troubleshooting: Resolving 504 Gateway Timeout on AI Inference
+
+* **Symptom:** Short prompts like *"hi"* completed successfully (~9–11s), but complex financial queries resulted in UI errors: *"Sorry, something went wrong."*
+  
+* **Root Cause Analysis:** Inspecting the browser Network tab revealed HTTP `504 Gateway Timeout` errors at exactly ~15.3 seconds. By default, Envoy Gateway enforces a 15-second client request timeout. Because Ollama executes TinyLlama inference on EC2 CPU (`t3.medium`) without hardware GPU acceleration, multi-sentence token generation requires 20–30 seconds. Envoy severed the connection prematurely at second 15.
+  
+* **Resolution:** Extended the Gateway API HTTP request timeout from 15s to 120s directly in `k8s/gateway.yml` under `HTTPRoute.spec.rules.timeouts`:
+
+```yaml
+spec:
+  parentRefs:
+    - name: bankapp-gateway
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: bankapp-service
+          port: 8080
+      timeouts:
+        request: 120s
+
+```
+
+* **Verification:** Re-applied the manifest (`kubectl apply -f k8s/gateway.yml`). Re-tested with full financial prompts; the connection remained open until generation completed, returning HTTP `200 OK`.
+
+
 ---
 
 ## Task 3: Deploy the Monitoring Stack (Prometheus & Grafana)
@@ -214,13 +243,16 @@ kubectl get pods -n monitoring
 
 ```
 
+<img width="1818" height="490" alt="image" src="https://github.com/user-attachments/assets/0ef91376-cf52-40b9-93c9-c58ae21f0f56" />
+
+
 ### 3.2 Configure Application Metrics Scraping via ServiceMonitor
 
 AI-BankApp natively exposes metrics via Spring Boot Actuator (`/actuator/prometheus`). Create and apply the `ServiceMonitor`:
 
 ```bash
 cat <<'EOF' > bankapp-servicemonitor.yaml
-apiVersion: [monitoring.coreos.com/v1](https://monitoring.coreos.com/v1)
+apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: bankapp-monitor
@@ -243,6 +275,8 @@ EOF
 kubectl apply -f bankapp-servicemonitor.yaml
 
 ```
+<img width="1824" height="822" alt="image" src="https://github.com/user-attachments/assets/9771309b-9e8a-418f-8d74-42c46e00d182" />
+
 
 ### 3.3 Access Grafana & Prometheus Port-Forwards
 
@@ -257,8 +291,14 @@ kubectl port-forward svc/monitoring-kube-prometheus-prometheus -n monitoring 909
 
 ```
 
+<img width="3408" height="406" alt="image" src="https://github.com/user-attachments/assets/27f9ec3f-2bbd-4622-8121-8b9fb7de9714" />
+
+
 * **Grafana Login:** Navigate to `http://localhost:3000` (User: `admin`, Password: `admin123`).
 * **Prometheus Targets:** Navigate to `http://localhost:9090/targets` to verify `serviceMonitor/monitoring/bankapp-monitor/0` reports in `UP` state.
+
+<img width="3420" height="2030" alt="image" src="https://github.com/user-attachments/assets/23d75639-84fe-45e1-91c5-43ef90913222" />
+
 
 ### 3.4 Key PromQL Queries for AI-BankApp
 
@@ -284,8 +324,64 @@ histogram_quantile(0.95, rate(http_server_requests_seconds_bucket{namespace="ban
 
 ```
 
+<img width="2542" height="1878" alt="image" src="https://github.com/user-attachments/assets/dd0143c5-511a-4b57-a9c1-9e62d830deed" />
 
 
+### 3.5 Real-World Troubleshooting: Resolving Prometheus ServiceMonitor `0/0 up` Target Mismatch
+
+* **Symptom:** After applying `bankapp-servicemonitor.yaml`, navigating to Prometheus (`http://localhost:9090/targets`) showed `serviceMonitor/monitoring/bankapp-monitor/0` with status `0 / 0 up` (no active scrape targets discovered)[cite: 6]. PromQL queries like `jvm_memory_used_bytes` returned empty results.
+* **Root Cause Analysis:** Prometheus Operator uses CRD-driven discovery that requires two conditions to discover and scrape application endpoints:
+  1. **Service Metadata Labels:** The `ServiceMonitor.spec.selector.matchLabels` queries the Kubernetes `Service` resource's `metadata.labels`, not the underlying `Pod` labels. `bankapp-service` was missing `metadata.labels: { app: bankapp }`.
+  2. **Named Endpoints:** In Prometheus Operator CRDs, `endpoints[].port` requires the **string name** (`name`) of the target port defined on the Kubernetes Service, not the raw integer port `8080`. The original service manifest had no `name` property under `spec.ports`.
+* **Resolution:**
+  1. Updated `k8s/service.yml` to explicitly name the port `http` and label the service:
+     ```yaml
+     apiVersion: v1
+     kind: Service
+     metadata:
+       name: bankapp-service
+       namespace: bankapp
+       labels:
+         app: bankapp
+     spec:
+       type: ClusterIP
+       sessionAffinity: ClientIP
+       sessionAffinityConfig:
+         clientIP:
+           timeoutSeconds: 3600
+       selector:
+         app: bankapp
+       ports:
+         - name: http
+           port: 8080
+           targetPort: 8080
+     ```
+     
+  2. Updated `bankapp-servicemonitor.yaml` to target the named port `http`:
+     
+     ```yaml
+     apiVersion: [monitoring.coreos.com/v1](https://monitoring.coreos.com/v1)
+     kind: ServiceMonitor
+     metadata:
+       name: bankapp-monitor
+       namespace: monitoring
+       labels:
+         release: monitoring
+     spec:
+       namespaceSelector:
+         matchNames:
+           - bankapp
+       selector:
+         matchLabels:
+           app: bankapp
+       endpoints:
+         - port: http
+           path: /actuator/prometheus
+           interval: 15s
+     ```
+* **Verification:** Re-applied both manifests. Scrape pool immediately discovered both replicas, updating status to `2 / 2 up`, and Actuator JVM/HTTP metrics began populating in Grafana and Prometheus.
+
+  
 Explore pre-built Grafana dashboards:
 
 * **Kubernetes / Compute Resources / Namespace (Pods):** Select namespace `bankapp`.
@@ -294,11 +390,24 @@ Explore pre-built Grafana dashboards:
 
 ---
 
+### 3.6 Architecture Note: Managed Control Plane Scrape Targets on Amazon EKS
+
+* **Observation:** In the Prometheus Targets dashboard, `kube-controller-manager`, `kube-etcd`, and `kube-scheduler` display `0 / 0 up`[cite: 7].
+* **Explanation:** Unlike bare-metal or self-managed Kubernetes (such as `kubeadm`), Amazon EKS abstracts the Kubernetes control plane into a dedicated, isolated AWS-managed VPC. Customers do not manage or have direct network ingress to the underlying `etcd` nodes, scheduler, or controller manager instances.
+* **Production Best Practice:** On Amazon EKS, control plane health is monitored via AWS CloudWatch Control Plane logs and native EKS console metrics. In production Helm values for `kube-prometheus-stack`, these scrapers are explicitly disabled (`kubeControllerManager.enabled: false`, `kubeEtcd.enabled: false`, `kubeScheduler.enabled: false`) to eliminate dead target pools.
+
+
+---
+
+
 ## Task 4: End-to-End Validation Checklist
 
 Run the validation script to audit all operational layers:
 
 ```bash
+# Ensure APP_URL is populated dynamically
+export APP_URL=$(kubectl get gateway bankapp-gateway -n bankapp -o jsonpath='{.status.addresses[0].value}')
+
 echo "=== 1. APPLICATION LAYER VALIDATION ==="
 kubectl get pods -n bankapp
 echo "--- App Health Endpoint ---"
@@ -331,6 +440,12 @@ echo "Checking secret isolation in environment definition:"
 kubectl get secret bankapp-secret -n bankapp -o yaml | grep -c "MYSQL_ROOT_PASSWORD"
 
 ```
+
+<img width="2362" height="1184" alt="image" src="https://github.com/user-attachments/assets/e0664a11-7474-4313-94c5-73aed7f299a2" />
+<img width="2464" height="412" alt="image" src="https://github.com/user-attachments/assets/9554d171-99b4-46f9-9009-57ab3f5d1a4e" />
+<img width="2586" height="722" alt="image" src="https://github.com/user-attachments/assets/7ed079ae-ec92-43bc-80bb-e74dea881d2e" />
+<img width="1652" height="216" alt="image" src="https://github.com/user-attachments/assets/be7e71c5-def0-43ff-97cd-2860960ccf98" />
+
 
 ### Validation Matrix Results
 
