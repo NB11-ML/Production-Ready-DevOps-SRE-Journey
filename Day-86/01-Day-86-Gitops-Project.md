@@ -59,6 +59,9 @@ kubectl get pods -n argocd
 
 ```
 
+<img width="1808" height="706" alt="image" src="https://github.com/user-attachments/assets/de179532-8222-41cc-af0a-763acd3520b4" />
+
+
 ---
 
 ## Task 1: Study the AI-BankApp's GitOps CI Pipeline
