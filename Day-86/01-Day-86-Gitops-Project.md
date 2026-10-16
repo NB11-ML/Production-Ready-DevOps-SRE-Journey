@@ -180,9 +180,12 @@ argocd login localhost:8080 --username admin --password "$ARGOCD_PWD" --plaintex
 
 # Apply the ArgoCD Application manifest and verify repo URL
 kubectl apply -f argocd/application.yml
-argocd app set bankapp --repo [https://github.com/NB11-ML/AI-BankApp-DevOps.git](https://github.com/NB11-ML/AI-BankApp-DevOps.git)
+argocd app set bankapp --repo https://github.com/NB11-ML/AI-BankApp-DevOps.git
 
 ```
+
+<img width="1592" height="2026" alt="image" src="https://github.com/user-attachments/assets/4058f2cc-d0d1-494f-a451-6e8854b61e3b" />
+
 
 ---
 
@@ -196,12 +199,15 @@ Edit the HTML layout template to customize the banking portal title:
 
 ```bash
 # Inspect and update the title tag in the layout template
-sed -i 's|<title>.*</title>|<title>AI BankApp - Built by NB11-ML</title>|' src/main/resources/templates/fragments/layout.html
+sed -i '' 's|<title th:text="${title}">BankApp</title>|<title th:text="${title}">AI BankApp - Built by NB11-ML</title>|' src/main/resources/templates/fragments/layout.html
 
 # Verify the modification
 grep "<title>" src/main/resources/templates/fragments/layout.html
 
 ```
+
+<img width="2162" height="294" alt="image" src="https://github.com/user-attachments/assets/90db3f40-bb0f-48e5-8908-20d262971902" />
+
 
 ### 3.2 Commit and Push to Trigger GitHub Actions
 
@@ -218,6 +224,8 @@ git push origin feat/gitops
 2. Observe the **"GitOps CI - Build & Push to DockerHub"** workflow automatically trigger and execute all steps (`Build` -> `Test` -> `Docker Push` -> `Manifest Update`).
 
 ### Output:
+<img width="2022" height="1830" alt="image" src="https://github.com/user-attachments/assets/0440533e-0729-41fe-8cae-3b006fa1835e" />
+<img width="2018" height="1840" alt="image" src="https://github.com/user-attachments/assets/9354640b-330c-4330-8aed-d71c8317ad18" />
 
 
 3. Pull the latest commit history locally to verify the bot commit:
@@ -239,6 +247,8 @@ e4f9a21 (HEAD -> feat/gitops, origin/feat/gitops) ci: update bankapp image to 8b
 ```
 ### Output:
 
+<img width="2000" height="626" alt="image" src="https://github.com/user-attachments/assets/9a766f04-cd95-4c5e-940f-ee2f5b538032" />
+
 
 ### 3.4 Verify ArgoCD Reconciliation & Rolling Update on EKS
 
@@ -257,6 +267,9 @@ kubectl get pods -n bankapp -l app=bankapp -w
 ```
 ### Output:
 
+<img width="3408" height="1528" alt="image" src="https://github.com/user-attachments/assets/785dc873-356b-43ab-a87d-4d42a320aebd" />
+
+
 ### 3.5 Verify Live Production Change
 
 Forward local traffic to the service and verify the updated HTML title is live:
@@ -268,6 +281,9 @@ curl -s http://localhost:8081/login | grep "<title>"
 ```
 
 **Output:** `<title>AI BankApp - Built by NB11-ML</title>`
+
+<img width="2804" height="308" alt="image" src="https://github.com/user-attachments/assets/24fa610e-d8f9-4e1a-a6c0-682d1f25ffa2" />
+
 
 ---
 
@@ -328,6 +344,8 @@ kubectl get svc -n bankapp -w
 argocd app history bankapp
 
 ```
+
+<img width="2512" height="1100" alt="image" src="https://github.com/user-attachments/assets/799db2f2-8733-41bd-a0fd-6fcc5c5ca368" />
 
 
 * **Result:** ArgoCD detected the missing Kubernetes Service resource and instantaneously recreated `bankapp-service` on port `8080`, restoring internal cluster routing with minimal disruption.
