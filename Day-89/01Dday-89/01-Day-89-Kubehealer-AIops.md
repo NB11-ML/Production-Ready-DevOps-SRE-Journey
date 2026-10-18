@@ -94,136 +94,184 @@ pip install -r requirements.txt
 # 5. Configure the Anthropic API Key for Claude Sonnet 4
 export ANTHROPIC_API_KEY="your-api-key-here"
 ```
+<img width="3408" height="1916" alt="image" src="https://github.com/user-attachments/assets/03868cd8-6d34-42ef-b05f-ab2c3bf90b4a" />
 
 ---
 
 ## Task 3: Deploy Broken Applications
 
-To test KubeHealer across both fixable and unfixable scenarios, three broken applications were deployed to the `default` namespace:
+To test KubeHealer across both fixable and unfixable scenarios, three broken applications were deployed to the `default` namespace as Kubernetes Deployments (enabling declarative rolling patch remediation via `kubectl patch`):
 
 ### 3.1 App 1 — Image Typo (`web-app` — Fixable by the Agent)
 The image name is misspelled as `ngnix:latest` instead of `nginx:latest`, triggering an `ImagePullBackOff` error.
 
 ```yaml
 # web-app.yaml
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: web-app
   namespace: default
 spec:
-  containers:
-    - name: web
-      image: ngnix:latest
-      ports:
-        - containerPort: 80
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-app
+  template:
+    metadata:
+      labels:
+        app: web-app
+    spec:
+      containers:
+        - name: web
+          image: ngnix:latest
+          ports:
+            - containerPort: 80
+
 ```
 
 ### 3.2 App 2 — OOM Crash (`memory-app` — Fixable by the Agent)
+
 The container memory limit is set to `1Mi`, which is far too low for the container runtime, causing an immediate `OOMKilled` (`Exit Code 137`) and `CrashLoopBackOff`.
 
 ```yaml
 # memory-app.yaml
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: memory-app
   namespace: default
 spec:
-  containers:
-    - name: app
-      image: nginx:alpine
-      resources:
-        limits:
-          memory: "1Mi"
-      command: ["sh", "-c", "echo 'starting' && sleep 3600"]
+  replicas: 1
+  selector:
+    matchLabels:
+      app: memory-app
+  template:
+    metadata:
+      labels:
+        app: memory-app
+    spec:
+      containers:
+        - name: app
+          image: nginx:alpine
+          resources:
+            limits:
+              memory: "1Mi"
+          command: ["sh", "-c", "echo 'starting' && sleep 3600"]
+
 ```
 
 ### 3.3 App 3 — Missing ConfigMap (`config-app` — NOT Fixable by the Agent)
-This pod references a ConfigMap named `app-config` that does not exist in the cluster, resulting in `CreateContainerConfigError`. Because an AI agent should never fabricate arbitrary configuration data, it must diagnose this issue and **escalate it to a human**.
+
+This workload references a ConfigMap named `app-config` that does not exist in the cluster, resulting in `CreateContainerConfigError`. Because an AI agent should never fabricate arbitrary configuration data, it must diagnose this issue and escalate it to a human operator.
 
 ```yaml
 # config-app.yaml
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: config-app
   namespace: default
 spec:
-  containers:
-    - name: app
-      image: nginx:alpine
-      envFrom:
-        - configMapRef:
-            name: app-config
+  replicas: 1
+  selector:
+    matchLabels:
+      app: config-app
+  template:
+    metadata:
+      labels:
+        app: config-app
+    spec:
+      containers:
+        - name: app
+          image: nginx:alpine
+          envFrom:
+            - configMapRef:
+                name: app-config
+
 ```
 
-### 3.4 Verify All Three Pods Are Broken
-```text
+### 3.4 Verify All Three Applications Are Broken
+
+```bash
 $ kubectl apply -f web-app.yaml -f memory-app.yaml -f config-app.yaml
 $ kubectl get pods
-NAME         READY   STATUS                       RESTARTS   AGE
-web-app      0/1     ImagePullBackOff             0          45s
-memory-app   0/1     CrashLoopBackOff             3          45s
-config-app   0/1     CreateContainerConfigError   0          45s
+NAME                              READY   STATUS                       RESTARTS      AGE
+pod/config-app-7cb865cbff-sr645   0/1     CreateContainerConfigError   0             83s
+pod/memory-app-5c44784c7-2wsmw    0/1     RunContainerError            3 (40s ago)   83s
+pod/web-app-68989cd5b8-nftwl      0/1     ImagePullBackOff             0             83s
+
 ```
+
+<img width="2268" height="496" alt="image" src="https://github.com/user-attachments/assets/37faa140-804e-45da-bbac-b9433f39062c" />
 
 ---
 
-## Task 4: Run KubeHealer (Scan, Diagnose, Approve, and Fix)
+## Task 4: Run KubeHealer (Scan, Diagnose, and Autonomous Remediation)
 
 ### 4.1 Start the Worker and Trigger a Healing Run
-In Terminal 1, start the Temporal worker (the agent execution process):
+In Terminal 1, start the Temporal worker:
 ```bash
 python3 worker.py
+
 ```
 
-In Terminal 2, trigger the KubeHealer workflow:
+In Terminal 2, initiate the workflow run:
+
 ```bash
 python3 starter.py
+
 ```
 
-### 4.2 How KubeHealer Processes the Cluster
-1. **Scan:** Lists all pods in the target namespace and filters for unhealthy statuses (`web-app`, `memory-app`, `config-app`).
-2. **Diagnose:** For each unhealthy pod, executes `kubectl describe pod` and reads cluster events, passing the telemetry to Claude Sonnet 4.
-3. **Propose Fixes:**
-   * **`web-app`:** Diagnoses the image typo (`ngnix:latest`) and prepares a patch to update the image to `nginx:latest`.
-   * **`memory-app`:** Diagnoses the `OOMKilled` state and prepares a patch to increase the memory limit from `1Mi` to `128Mi`.
-   * **`config-app`:** Diagnoses the missing ConfigMap (`app-config`) and marks it as `CANNOT FIX — requires manual ConfigMap creation`.
-4. **Ask for Approval:** Presents all proposed fixes in the terminal and pauses workflow execution via a Temporal signal until the human operator responds.
+### 4.2 How KubeHealer Remediates the Cluster
 
-### 4.3 Terminal Output: Proposing Fixes & Human Approval
+1. **Scan Activity (`scan_pods`):** Discovers all pods across the target namespace (`default`) and flags workloads in error states (`ImagePullBackOff`, `CrashLoopBackOff`, and `CreateContainerConfigError`).
+2. **Diagnostic Engine (`diagnose_pod`):** Analyzes pod events and telemetry to generate root causes and structured patch payloads:
+* **`web-app`:** Identifies the typo in `ngnix:latest` and prepares a patch updating the container image to `nginx:latest`.
+* **`memory-app`:** Identifies `OOMKilled` (`Exit Code 137`) caused by a 1Mi limit and prepares a patch raising memory limits to `128Mi`.
+* **`config-app`:** Flags the missing ConfigMap `app-config`, classifies it as unfixable without operator intervention, and marks it with the `skip` action.
+
+
+3. **Execution Activity (`execute_fix`):** Automatically applies rolling strategic patches to the fixable workloads and safely skips the missing dependency.
+
+### 4.3 Actual Terminal Output
+
 ```text
 $ python3 starter.py
-Scanning cluster in namespace 'default'...
-Found 3 broken pods.
 
-Proposed fixes:
-1. web-app: Fix image typo (ngnix → nginx)
-2. memory-app: Increase memory limit (1Mi → 128Mi)
-3. config-app: CANNOT FIX - needs manual ConfigMap creation
+🚀 Starting KubeHealer workflow (id=kubehealer-1792341980)...
+   Namespace: default
 
-Approve all fixes? [yes/no]: yes
+Healed 2/3 pods:
 
-Applying approved fixes...
-  [PATCHED] pod/web-app: image updated to nginx:latest
-  [PATCHED] pod/memory-app: memory limit increased to 128Mi
-  [SKIPPED] pod/config-app: escalated to human operator (missing ConfigMap 'app-config')
+  [-] config-app: skipped -- Missing ConfigMap 'app-config' cannot be auto-generated; escalating to human operator
+  [+] web-app: fix_image -- Patched image to nginx:latest
+  [+] memory-app: patch_resources -- Patched memory to 128Mi
+
+📊 View workflow trace: http://localhost:8233/namespaces/default/workflows/kubehealer-1792341980
+
 ```
-
-![KubeHealer Proposing Fixes and Asking for Approval](./screenshots/kubehealer-approval.png)
 
 ### 4.4 Post-Remediation Verification
-After typing `yes`, KubeHealer patched `web-app` and `memory-app` using `kubectl patch` and skipped `config-app`:
+
+Running `kubectl get deployments,pods` confirms that both auto-remediated services are fully restored, while `config-app` was escalated without causing destructive side-effects:
 
 ```text
-$ kubectl get pods
-NAME         READY   STATUS                       RESTARTS   AGE
-web-app      1/1     Running                      0          3m20s
-memory-app   1/1     Running                      0          25s
-config-app   0/1     CreateContainerConfigError   0          3m20s
+$ kubectl get deployments,pods -o wide
+NAME                          READY   UP-TO-DATE   AVAILABLE   AGE    CONTAINERS   IMAGES         SELECTOR
+deployment.apps/config-app    0/1     1            0           9m7s   app          nginx:alpine   app=config-app
+deployment.apps/memory-app    1/1     1            1           9m7s   app          nginx:alpine   app=memory-app
+deployment.apps/web-app       1/1     1            1           9m7s   web          nginx:latest   app=web-app
+
+NAME                                  READY   STATUS                       RESTARTS   AGE    IP            NODE
+pod/config-app-7cb865cbff-sr645       0/1     CreateContainerConfigError   0          9m7s   10.244.0.10   kubehealer-demo-control-plane
+pod/memory-app-666789c8f4-h6grv       1/1     Running                      0          97s    10.244.0.11   kubehealer-demo-control-plane
+pod/web-app-69774fc7cd-skxdq          1/1     Running                      0          97s    10.244.0.12   kubehealer-demo-control-plane
+
 ```
-`web-app` and `memory-app` are now healthy and `Running`, while `config-app` remains safely untouched and escalated for human action.
+
+<img width="3240" height="858" alt="image" src="https://github.com/user-attachments/assets/fafa4a7e-966d-45ef-a5a7-2abc15bb9bcf" />
+
 
 ---
 
@@ -234,7 +282,7 @@ To verify that KubeHealer is crash-resistant during live incidents, we tested ki
 ### 5.1 Step-by-Step Crash Simulation
 1. **Redeploy the three broken applications:**
    ```bash
-   kubectl delete pod web-app memory-app config-app
+   kubectl delete deployment web-app memory-app config-app
    kubectl apply -f web-app.yaml -f memory-app.yaml -f config-app.yaml
    ```
 2. **Start the worker in the background and trigger a healing run:**
@@ -266,13 +314,16 @@ To verify that KubeHealer is crash-resistant during live incidents, we tested ki
   |-- Workflow continues seamlessly to the Human Approval prompt!
 ```
 
+<img width="3410" height="2026" alt="image" src="https://github.com/user-attachments/assets/aedca981-0918-4b08-b7d8-606023c2ab1a" />
+
+
 ### 5.3 Temporal Web UI Audit Trail (`http://localhost:8233`)
 Opening `http://localhost:8233` and selecting the workflow execution displays:
 * Every activity execution (`scan`, `diagnose`, `fix`) along with its exact input and output payloads.
 * The exact crash and recovery boundary where the worker stopped and resumed.
 * The complete execution timeline—serving as an automatic audit trail of every Claude API call, every `kubectl` command, and every applied patch.
 
-![Temporal UI Showing Workflow Execution and Recovery](./screenshots/temporal-ui-workflow.png)
+<img width="3416" height="2054" alt="image" src="https://github.com/user-attachments/assets/91c2189c-09f6-4b52-b959-a295d392aa16" />
 
 ---
 
