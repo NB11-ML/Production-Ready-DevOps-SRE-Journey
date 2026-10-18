@@ -1,8 +1,8 @@
-# Day 88: Multi-Tool Agents, Model Context Protocol (MCP), and CI/CD Failure Analyzer
+# Multi-Tool Agents, Model Context Protocol (MCP), and CI/CD Failure Analyzer
 
 ## 1. Multi-Tool Agent Architecture (6 Tools Across 2 Domains)
 
-In Day 87, the agent was restricted to a single domain (Docker). In Day 88, the ReAct agent is expanded to reason across **two distinct infrastructure domains—Docker and Kubernetes**—using a single LLM brain (`gemma4:12b` via Ollama).
+In Day 87, the agent was restricted to a single domain (Docker). In Day 88, the ReAct agent is expanded to reason across **two distinct infrastructure domains—Docker and Kubernetes**—using a single LLM brain (`gemma4` via Ollama).
 
 ### Architecture Diagram
 ```text
